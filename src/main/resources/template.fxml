@@ -1,0 +1,44 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<GridPane xmlns:fx="http://javafx.com/fxml/1"
+        alignment="CENTER" hgap="10" vgap="10">
+    <padding>
+        <Insets top="25" right="25" bottom="10" left="10"/>
+    </padding>
+
+    <Label text="Path to first map on s3:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+    <TextField fx:id="map1Path" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+    <Label text="Path to second map on s3:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <TextField fx:id="map2Path" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+    <Label text="Name of the 1st map:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+    <TextField fx:id="map1Name" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+    <Label text="Name of the 2n map" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+    <TextField fx:id="map2Name" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+    <VBox GridPane.columnIndex="0" GridPane.rowIndex="4" fx:id="products">
+        <Label text="Products:"/>
+        <CheckBox text="LC"/>
+        <CheckBox text="FB"/>
+        <CheckBox text="3D"/>
+        <CheckBox text="WOM"/>
+    </VBox>
+
+    <VBox GridPane.columnIndex="1" GridPane.rowIndex="4">
+        <Label text="Update region [Optional]:"/>
+        <TextField fx:id="updateRegion"/>
+    </VBox>
+
+    <Button fx:id="outputDir" text="Select output directory:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+    <TextField fx:id="outputDirPath" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+    <HBox GridPane.rowIndex="7" GridPane.columnSpan="2" alignment="BOTTOM_CENTER" GridPane.rowSpan="10">
+        <Button text="Start" fx:id="start"/>
+        <Button text="Reset" fx:id="reset"/>
+    </HBox>
+
+    <!--<ProgressBar fx:id="progressBar" GridPane.columnSpan="2" GridPane.rowIndex="6"/>-->
+</GridPane>
