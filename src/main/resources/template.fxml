@@ -1,25 +1,18 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 <GridPane xmlns:fx="http://javafx.com/fxml/1"
-        alignment="CENTER" hgap="10" vgap="10">
+          alignment="CENTER" hgap="10" vgap="10">
     <padding>
         <Insets top="25" right="25" bottom="10" left="10"/>
     </padding>
 
-    <Label text="Path to first map on s3:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-    <TextField fx:id="map1Path" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+    <Label text="Path to logs map on s3:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+    <TextField fx:id="mapPath" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-    <Label text="Path to second map on s3:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <TextField fx:id="map2Path" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-    <Label text="Name of the 1st map:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-    <TextField fx:id="map1Name" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-    <Label text="Name of the 2n map" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-    <TextField fx:id="map2Name" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-
-    <VBox GridPane.columnIndex="0" GridPane.rowIndex="4" fx:id="products">
+    <VBox GridPane.columnIndex="0" GridPane.rowIndex="1" fx:id="products">
         <Label text="Products:"/>
         <CheckBox text="LC"/>
         <CheckBox text="FB"/>
@@ -27,15 +20,44 @@
         <CheckBox text="WOM"/>
     </VBox>
 
-    <VBox GridPane.columnIndex="1" GridPane.rowIndex="4">
+    <VBox GridPane.columnIndex="1" GridPane.rowIndex="1">
         <Label text="Update region [Optional]:"/>
         <TextField fx:id="updateRegion"/>
     </VBox>
 
-    <Button fx:id="outputDir" text="Select output directory:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+    <ChoiceBox GridPane.columnIndex="0" GridPane.rowIndex="2" fx:id="logLevel">
+        <items>
+            <FXCollections fx:factory="observableArrayList">
+                <String fx:value="--None--"/>
+                <String fx:value="TRACE"/>
+                <String fx:value="DEBUC"/>
+                <String fx:value="INFO"/>
+                <String fx:value="WARN"/>
+                <String fx:value="ERROR"/>
+            </FXCollections>
+        </items>
+        <value>
+            <String fx:value="--None--"/>
+        </value>
+    </ChoiceBox>
+
+    <VBox GridPane.columnIndex="1" GridPane.rowIndex="2">
+        <Label text="Sprecify expression to seach:"/>
+        <TextField fx:id="expression"/>
+    </VBox>
+
+    <HBox GridPane.rowIndex="3" GridPane.columnIndex="2" fx:id="outputFormat">
+        <fx:define>
+            <ToggleGroup fx:id="toggle"/>
+        </fx:define>
+        <RadioButton text=".csv" toggleGroup="$toggle" selected="true"/>
+        <RadioButton text=".sq3" toggleGroup="$toggle"/>
+    </HBox>
+
+    <Button fx:id="outputDir" text="Select output directory:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
     <TextField fx:id="outputDirPath" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-    <HBox GridPane.rowIndex="7" GridPane.columnSpan="2" alignment="BOTTOM_CENTER" GridPane.rowSpan="10">
+    <HBox GridPane.rowIndex="6" GridPane.columnSpan="2" alignment="BOTTOM_CENTER" GridPane.rowSpan="10">
         <Button text="Start" fx:id="start"/>
         <Button text="Reset" fx:id="reset"/>
     </HBox>

@@ -7,11 +7,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Labeled;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -21,22 +18,22 @@ import java.nio.file.Paths;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TaskPerformanceApplication extends Application {
+public class ConsoleLogsParserApplication extends Application {
     private static final String S3_PREFIX = "s3://";
 
     private Settings settings;
     @FXML
-    private TextField map1Path;
-    @FXML
-    private TextField map2Path;
-    @FXML
-    private TextField map1Name;
-    @FXML
-    private TextField map2Name;
+    private TextField mapPath;
     @FXML
     private VBox products;
     @FXML
+    private HBox outputFormat;
+    @FXML
+    private ChoiceBox logLevel;
+    @FXML
     private TextField updateRegion;
+    @FXML
+    private TextField expressionToFind;
     @FXML
     private TextField outputDirPath;
     @FXML
@@ -73,20 +70,17 @@ public class TaskPerformanceApplication extends Application {
             settings = new Settings.Builder()
                     .product(productCheckBoxes.stream().map(Labeled::getText).collect(Collectors.toSet()))
                     .updateRegion(updateRegion.getText())
-                    .map1Path(map1Path.getText())
-                    .map2Path(map2Path.getText())
-                    .map1Name(map1Name.getText())
-                    .map2Name(map2Name.getText())
+                    .mapPath(mapPath.getText())
+
                     .outputDir(outputDirPath.getText())
                     .build();
 
-            if (map1Path.getText() == null || map1Path.getText().isEmpty() || !map1Path.getText().startsWith(S3_PREFIX)
-                   || map2Path.getText() == null || map2Path.getText().isEmpty() || !map2Path.getText().startsWith(S3_PREFIX))
+            if (mapPath.getText() == null || mapPath.getText().isEmpty() || !mapPath.getText().startsWith(S3_PREFIX))
             {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Invalid path(s) to s3");
+                alert.setTitle("Invalid path to s3");
                 alert.setHeaderText(null);
-                alert.setContentText("Specify valid path to s3 for first and second paths!");
+                alert.setContentText("Specify valid path to s3 map logs!");
                 alert.showAndWait();
             }
             System.out.println(settings);
@@ -113,10 +107,8 @@ public class TaskPerformanceApplication extends Application {
         // reset
         reset.setOnAction(action ->
         {
-            map1Path.setText(null);
-            map1Name.setText(null);
-            map2Path.setText(null);
-            map2Name.setText(null);
+            mapPath.setText(null);
+
             updateRegion.setText(null);
             products.getChildren().stream()
                     .filter(c -> c.getClass().equals(CheckBox.class))
@@ -145,10 +137,8 @@ public class TaskPerformanceApplication extends Application {
 
     private void initElements(Parent root)
     {
-        map1Path = (TextField) root.lookup("#map1Path");
-        map1Name = (TextField) root.lookup("#map1Name");
-        map2Path = (TextField) root.lookup("#map2Path");
-        map2Name = (TextField) root.lookup("#map2Name");
+        mapPath = (TextField) root.lookup("#map1Path");
+
         updateRegion = (TextField) root.lookup("#updateRegion");
         products = (VBox) root.lookup("#products");
         outputDir = (Button) root.lookup("#outputDir");

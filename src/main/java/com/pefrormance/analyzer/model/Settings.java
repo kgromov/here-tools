@@ -11,25 +11,22 @@ import java.util.Set;
 @ToString
 public class Settings
 {
-    private static final String DEFAULT_VERSION1 = "map1";
-    private static final String DEFAULT_VERSION2 = "map2";
-
     private Set<String> products;
     private String updateRegion;
-    private String map1Path;
-    private String map1Name;
-    private String map2Path;
-    private String map2Name;
+    private String mapPath;
+    private String logLevel;
+    private String expressionToFind;
+    private String outputFormat;
     private String outputDir;
 
     private Settings(Builder builder)
     {
       this.products = builder.products;
       this.updateRegion = builder.updateRegion;
-      this.map1Path = builder.map1Path;
-      this.map1Name = builder.map1Name;
-      this.map2Path = builder.map2Path;
-      this.map2Name = builder.map2Name;
+      this.mapPath = builder.mapPath;
+      this.logLevel = builder.logLevel;
+      this.expressionToFind = builder.expressionToFind;
+      this.outputFormat = builder.outputFormat;
       this.outputDir = builder.outputDir == null ? Paths.get(".").normalize().toAbsolutePath().toString() : builder.outputDir;
     }
 
@@ -43,33 +40,15 @@ public class Settings
         return Paths.get(outputDir).resolve("results");
     }
 
-    private static String getVersion(String path, String defaultValue)
-    {
-        int startIndex = path.indexOf("Akela");
-        int endIndex = path.indexOf("/logs");
-        return startIndex != -1 && endIndex != -1 ? path.substring(startIndex, endIndex) : defaultValue;
-    }
-
-    public String getMap1Name()
-    {
-        return map1Name != null && !map1Name.isEmpty()
-                ? map1Name
-                : getVersion(map1Path, DEFAULT_VERSION1);
-    }
-    public String getMap2Name()
-    {
-        return map2Name != null && !map2Name.isEmpty()
-                ? map2Name
-                : getVersion(map2Path, DEFAULT_VERSION2);
-    }
-
 
     public void reset()
     {
         this.products = null;
         this.updateRegion = null;
-        this.map1Path = null;
-        this.map2Path = null;
+        this.mapPath = null;
+        this.logLevel = null;
+        this.expressionToFind = null;
+        this.outputFormat = null;
         this.outputDir = null;
     }
 
@@ -77,10 +56,10 @@ public class Settings
     {
         private Set<String> products;
         private String updateRegion;
-        private String map1Path;
-        private String map1Name;
-        private String map2Path;
-        private String map2Name;
+        private String mapPath;
+        private String logLevel;
+        private String expressionToFind;
+        private String outputFormat;
         private String outputDir;
 
         public Settings build()
@@ -100,27 +79,27 @@ public class Settings
             return this;
         }
 
-        public Builder map1Path(String map1Path)
+        public Builder mapPath(String mapPath)
         {
-            this.map1Path = map1Path;
+            this.mapPath = mapPath;
             return this;
         }
 
-        public Builder map2Path(String map2Path)
+        public Builder logLevel(String logLevel)
         {
-            this.map2Path = map2Path;
+            this.logLevel = logLevel;
             return this;
         }
 
-        public Builder map1Name(String map1Name)
+        public Builder expressionToFind(String expressionToFind)
         {
-            this.map1Name = map1Name;
+            this.expressionToFind = expressionToFind;
             return this;
         }
 
-        public Builder map2Name(String map2Name)
+        public Builder outputFormat(String outputFormat)
         {
-            this.map2Name = map2Name;
+            this.outputFormat = outputFormat;
             return this;
         }
 

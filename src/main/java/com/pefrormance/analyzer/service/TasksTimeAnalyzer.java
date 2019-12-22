@@ -39,14 +39,14 @@ public class TasksTimeAnalyzer {
                     List<Future<?>> results = new ArrayList<>(2);
                     results.add(executor.submit(() -> {
                         try {
-                            new Downloader(product, settings.getUpdateRegion(), settings.getMap1Path(), outputDir).download(System.out::println);
+                            new Downloader(product, settings.getUpdateRegion(), settings.getMapPath(), outputDir).download(System.out::println);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }));
                     results.add(executor.submit(() -> {
                         try {
-                            new Downloader(product, settings.getUpdateRegion(), settings.getMap2Path(), outputDir).download(System.out::println);
+                            new Downloader(product, settings.getUpdateRegion(), settings.getMapPath(), outputDir).download(System.out::println);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -101,10 +101,10 @@ public class TasksTimeAnalyzer {
 //                    .product(new HashSet<>(Arrays.asList("LC", "FB", "3D", "WOM", "FTS")))
                 .product(new HashSet<>(Arrays.asList("LC")))
 //                    .updateRegion("DEU_G8")//
-                .map1Path("s3://akela-artifacts/Akela-191E3/CMP-e88110d/logs")
+                .mapPath("s3://akela-artifacts/Akela-191E3/CMP-e88110d/logs")
                 /*.map2Path("s3://akela-artifacts/Akela-19135/CMP-0c3fe8b/logs")
                 .map1Path("s3://akela-artifacts/Akela-19135/CMP-1430c6d/logs/")*/
-                .map2Path("s3://akela-artifacts/Akela-191E3/CMP-0e8a4f7/logs/")
+                .mapPath("s3://akela-artifacts/Akela-191E3/CMP-0e8a4f7/logs/")
                 .outputDir("C:\\HERE-CARDS\\my_dev_presubmits\\trash\\demo")
                 .build();
         TasksTimeAnalyzer analyzer = new TasksTimeAnalyzer(settings);
