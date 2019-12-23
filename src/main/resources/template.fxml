@@ -42,11 +42,12 @@
     </ChoiceBox>
 
     <VBox GridPane.columnIndex="1" GridPane.rowIndex="2">
-        <Label text="Sprecify expression to seach:"/>
+        <Label text="Specify expression to search:"/>
         <TextField fx:id="expression"/>
     </VBox>
 
-    <HBox GridPane.rowIndex="3" GridPane.columnIndex="2" fx:id="outputFormat">
+    <Label text="Choose output file format:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+    <HBox fx:id="outputFormat" GridPane.columnIndex="1" GridPane.rowIndex="3" >
         <fx:define>
             <ToggleGroup fx:id="toggle"/>
         </fx:define>

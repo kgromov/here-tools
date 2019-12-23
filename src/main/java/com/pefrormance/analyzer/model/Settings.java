@@ -1,5 +1,6 @@
 package com.pefrormance.analyzer.model;
 
+import com.pefrormance.analyzer.export.OutputFormat;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -16,7 +17,7 @@ public class Settings
     private String mapPath;
     private String logLevel;
     private String expressionToFind;
-    private String outputFormat;
+    private OutputFormat outputFormat;
     private String outputDir;
 
     private Settings(Builder builder)
@@ -59,7 +60,7 @@ public class Settings
         private String mapPath;
         private String logLevel;
         private String expressionToFind;
-        private String outputFormat;
+        private OutputFormat outputFormat;
         private String outputDir;
 
         public Settings build()
@@ -97,7 +98,7 @@ public class Settings
             return this;
         }
 
-        public Builder outputFormat(String outputFormat)
+        public Builder outputFormat(OutputFormat outputFormat)
         {
             this.outputFormat = outputFormat;
             return this;

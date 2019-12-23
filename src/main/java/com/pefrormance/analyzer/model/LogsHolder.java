@@ -1,7 +1,7 @@
 package com.pefrormance.analyzer.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pefrormance.analyzer.service.ResultsExporter;
+import com.pefrormance.analyzer.export.ResultsExporter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class LogsHolder {
         ObjectMapper mapper = new ObjectMapper();
         mapper.disable(FAIL_ON_UNKNOWN_PROPERTIES);
         // TODO: or move outside?
-        ResultsExporter exporter = new ResultsExporter(product, settings.getMap1Name(), settings.getMap2Name());
+        ResultsExporter exporter = new ResultsExporter(product, null, null);
 
         Map<String, List<Path>> logsPerRegion = Files.find(settings.getLogsFolder(),
                 Short.MAX_VALUE,

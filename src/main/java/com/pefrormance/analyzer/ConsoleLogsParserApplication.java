@@ -1,7 +1,8 @@
 package com.pefrormance.analyzer;
 
+import com.pefrormance.analyzer.export.OutputFormat;
 import com.pefrormance.analyzer.model.Settings;
-import com.pefrormance.analyzer.service.TasksTimeAnalyzer;
+import com.pefrormance.analyzer.service.ConsoleLogsManager;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -29,7 +30,7 @@ public class ConsoleLogsParserApplication extends Application {
     @FXML
     private HBox outputFormat;
     @FXML
-    private ChoiceBox logLevel;
+    private ChoiceBox<String> logLevel;
     @FXML
     private TextField updateRegion;
     @FXML
@@ -67,11 +68,22 @@ public class ConsoleLogsParserApplication extends Application {
                     .filter(CheckBox::isSelected)
                     .collect(Collectors.toSet());
 
+            OutputFormat format = outputFormat.getChildren().stream()
+                    .filter(c -> c.getClass().equals(RadioButton.class))
+                    .map(c -> (RadioButton) c)
+                    .filter(ToggleButton::isSelected)
+                    .map(Labeled::getText)
+                    .map(OutputFormat::getOutputFormat)
+                    .findFirst()
+                    .orElse(OutputFormat.CSV);
+
             settings = new Settings.Builder()
                     .product(productCheckBoxes.stream().map(Labeled::getText).collect(Collectors.toSet()))
                     .updateRegion(updateRegion.getText())
                     .mapPath(mapPath.getText())
-
+                    .expressionToFind(expressionToFind.getText())
+                    .logLevel(logLevel.getValue())
+                    .outputFormat(format)
                     .outputDir(outputDirPath.getText())
                     .build();
 
@@ -90,7 +102,7 @@ public class ConsoleLogsParserApplication extends Application {
 
             Thread thread = new Thread(() ->
             {
-                TasksTimeAnalyzer analyzer = new TasksTimeAnalyzer(settings);
+                ConsoleLogsManager analyzer = new ConsoleLogsManager(settings);
                 analyzer.run();
                 analyzer.removeLogFiles();
             });
@@ -108,12 +120,13 @@ public class ConsoleLogsParserApplication extends Application {
         reset.setOnAction(action ->
         {
             mapPath.setText(null);
-
             updateRegion.setText(null);
             products.getChildren().stream()
                     .filter(c -> c.getClass().equals(CheckBox.class))
                     .map(c -> (CheckBox) c)
                     .forEach(c -> c.setSelected(false));
+            logLevel.setValue("--None--");
+            expressionToFind.setText(null);
             outputDirPath.setText(null);
             outputDirPath.setEditable(true);
             if (settings != null)
@@ -137,10 +150,12 @@ public class ConsoleLogsParserApplication extends Application {
 
     private void initElements(Parent root)
     {
-        mapPath = (TextField) root.lookup("#map1Path");
-
+        mapPath = (TextField) root.lookup("#mapPath");
         updateRegion = (TextField) root.lookup("#updateRegion");
         products = (VBox) root.lookup("#products");
+        logLevel = (ChoiceBox<String>) root.lookup("#logLevel");
+        expressionToFind = (TextField) root.lookup("#expression");
+        outputFormat = (HBox) root.lookup("#outputFormat");
         outputDir = (Button) root.lookup("#outputDir");
         outputDirPath = (TextField) root.lookup("#outputDirPath");
         start = (Button) root.lookup("#start");

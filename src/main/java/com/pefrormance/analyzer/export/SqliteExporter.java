@@ -1,11 +1,11 @@
-package com.pefrormance.analyzer.service;
+package com.pefrormance.analyzer.export;
 
 import java.util.Collection;
 
 /**
  * Created by konstantin on 22.12.2019.
  */
-public class CsvExporter implements Exporter {
+public class SqliteExporter implements Exporter {
     @Override
     public void init() {
 
