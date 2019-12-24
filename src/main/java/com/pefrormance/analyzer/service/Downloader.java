@@ -1,6 +1,7 @@
 package com.pefrormance.analyzer.service;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.function.Consumer;
 
@@ -20,16 +21,16 @@ public class Downloader {
         this.destPath = destPath;
     }
 
-    public void download(Consumer<String> logConsumer) throws Exception
-    {
+    public void download(Consumer<String> logConsumer) throws IOException {
         String command = getAwsCopyCommand();
         ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", command);
         builder.redirectErrorStream(true);
         Process process = builder.start();
-        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String s;
-        while ((s = stdInput.readLine()) != null) {
-            logConsumer.accept(s);
+        try(BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String s;
+            while ((s = stdInput.readLine()) != null) {
+                logConsumer.accept(s);
+            }
         }
     }
 
@@ -53,7 +54,8 @@ public class Downloader {
         {
             commandBuilder.append(updateRegion).append('*');
         }
-        commandBuilder.append("json\"");
+        // TODO: move to parameter?
+        commandBuilder.append("console_log.zip\"");
         return commandBuilder.toString();
     }
 }

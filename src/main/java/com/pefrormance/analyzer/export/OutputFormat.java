@@ -3,14 +3,14 @@ package com.pefrormance.analyzer.export;
 public enum OutputFormat {
     SQ3(".sq3") {
         @Override
-        public Exporter getExporter() {
-            return new SqliteExporter();
+        public ExporterBuilder getExporterBuilde() {
+            return new SqliteExporter.SqliteExporterBuilder();
         }
     },
     CSV(".csv") {
         @Override
-        public Exporter getExporter() {
-            return new CsvExporter();
+        public ExporterBuilder getExporterBuilde() {
+            return new CsvExporter.CsvExporterBuilder();
         }
     };
     private final String format;
@@ -23,11 +23,10 @@ public enum OutputFormat {
         return format;
     }
 
-    public abstract Exporter getExporter();
+    public abstract ExporterBuilder getExporterBuilde();
 
-    // TODO: or probably builder as input parameters are required
     public static OutputFormat getOutputFormat(String fileExtension)
     {
-        return OutputFormat.valueOf(fileExtension.toLowerCase());
+        return OutputFormat.valueOf(fileExtension.toUpperCase());
     }
 }

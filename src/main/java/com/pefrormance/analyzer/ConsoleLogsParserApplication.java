@@ -1,6 +1,7 @@
 package com.pefrormance.analyzer;
 
 import com.pefrormance.analyzer.export.OutputFormat;
+import com.pefrormance.analyzer.model.LogFile;
 import com.pefrormance.analyzer.model.Settings;
 import com.pefrormance.analyzer.service.ConsoleLogsManager;
 import javafx.application.Application;
@@ -72,7 +73,7 @@ public class ConsoleLogsParserApplication extends Application {
                     .filter(c -> c.getClass().equals(RadioButton.class))
                     .map(c -> (RadioButton) c)
                     .filter(ToggleButton::isSelected)
-                    .map(Labeled::getText)
+                    .map(Labeled::getId)
                     .map(OutputFormat::getOutputFormat)
                     .findFirst()
                     .orElse(OutputFormat.CSV);
@@ -82,7 +83,7 @@ public class ConsoleLogsParserApplication extends Application {
                     .updateRegion(updateRegion.getText())
                     .mapPath(mapPath.getText())
                     .expressionToFind(expressionToFind.getText())
-                    .logLevel(logLevel.getValue())
+                    .logFile(LogFile.getLogFile(logLevel.getValue()))
                     .outputFormat(format)
                     .outputDir(outputDirPath.getText())
                     .build();

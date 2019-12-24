@@ -30,7 +30,7 @@
             <FXCollections fx:factory="observableArrayList">
                 <String fx:value="--None--"/>
                 <String fx:value="TRACE"/>
-                <String fx:value="DEBUC"/>
+                <String fx:value="DEBUG"/>
                 <String fx:value="INFO"/>
                 <String fx:value="WARN"/>
                 <String fx:value="ERROR"/>
@@ -51,8 +51,8 @@
         <fx:define>
             <ToggleGroup fx:id="toggle"/>
         </fx:define>
-        <RadioButton text=".csv" toggleGroup="$toggle" selected="true"/>
-        <RadioButton text=".sq3" toggleGroup="$toggle"/>
+        <RadioButton text=".csv" fx:id="CSV" toggleGroup="$toggle" selected="true"/>
+        <RadioButton text=".sq3" fx:id="SQ3" toggleGroup="$toggle"/>
     </HBox>
 
     <Button fx:id="outputDir" text="Select output directory:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>

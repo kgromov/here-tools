@@ -15,7 +15,9 @@ public class Settings
     private Set<String> products;
     private String updateRegion;
     private String mapPath;
-    private String logLevel;
+    // TODO: probably add name parameter
+//    private String resultFileName;
+    private LogFile logFile;
     private String expressionToFind;
     private OutputFormat outputFormat;
     private String outputDir;
@@ -25,7 +27,7 @@ public class Settings
       this.products = builder.products;
       this.updateRegion = builder.updateRegion;
       this.mapPath = builder.mapPath;
-      this.logLevel = builder.logLevel;
+      this.logFile = builder.logFile;
       this.expressionToFind = builder.expressionToFind;
       this.outputFormat = builder.outputFormat;
       this.outputDir = builder.outputDir == null ? Paths.get(".").normalize().toAbsolutePath().toString() : builder.outputDir;
@@ -47,7 +49,7 @@ public class Settings
         this.products = null;
         this.updateRegion = null;
         this.mapPath = null;
-        this.logLevel = null;
+        this.logFile = null;
         this.expressionToFind = null;
         this.outputFormat = null;
         this.outputDir = null;
@@ -58,7 +60,7 @@ public class Settings
         private Set<String> products;
         private String updateRegion;
         private String mapPath;
-        private String logLevel;
+        private LogFile logFile;
         private String expressionToFind;
         private OutputFormat outputFormat;
         private String outputDir;
@@ -86,9 +88,9 @@ public class Settings
             return this;
         }
 
-        public Builder logLevel(String logLevel)
+        public Builder logFile(LogFile logFile)
         {
-            this.logLevel = logLevel;
+            this.logFile = logFile;
             return this;
         }
 

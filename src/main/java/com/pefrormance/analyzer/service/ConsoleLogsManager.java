@@ -25,12 +25,6 @@ public class ConsoleLogsManager {
     }
 
     public void run() {
-        // intermediate layer for product:
-        // 1) find files;
-        // 2) split to stripes/FJPool or other strategy
-        // Introduce 1 more layer or process all files per product;
-        // Export
-
         long start = System.nanoTime();
         try
         {
@@ -44,9 +38,11 @@ public class ConsoleLogsManager {
                     ConsoleLogsParser parser = new ConsoleLogsParser(product);
                     List<String> outputData =  parser.bypass(settings);
                     // export
-                    Exporter exporter = settings.getOutputFormat().getExporter();
-                    exporter.init();
-                    // TODO: logic for empty data?
+                    Exporter exporter = settings.getOutputFormat().getExporterBuilde()
+                            .product(product)
+                            .settings(settings)
+                            .build();
+                    exporter.init(product, settings);
                     exporter.export(outputData);
                 } catch (Exception e) {
                     e.printStackTrace();
