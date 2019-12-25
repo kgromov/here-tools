@@ -5,8 +5,10 @@ import com.pefrormance.analyzer.model.Settings;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,10 +17,21 @@ import java.util.stream.Collectors;
  * Created by konstantin on 22.12.2019.
  */
 public class CsvExporter implements Exporter {
-    private  final String resultFile;
+    private static final List<String> HEADERS = Arrays.asList("UpdateRegion", "Details");
+    private final String resultFile;
 
     private CsvExporter(CsvExporterBuilder builder) {
-        this.resultFile = Exporter.getResultFile(builder.product, builder.settings).toString();
+        Settings settings = builder.settings;
+        this.resultFile = settings.getResultsFolder().resolve(builder.product
+                + "_AGGREGATED_LOG" + settings.getOutputFormat().getFormat()).toString();
+    }
+
+    @Override
+    public void init(String product, Settings settings) throws IOException {
+        Path regionDbFile = Paths.get(resultFile);
+        Files.createDirectories(settings.getResultsFolder());
+        Files.deleteIfExists(regionDbFile);
+        Files.createFile(regionDbFile);
     }
 
     @Override
@@ -30,8 +43,7 @@ public class CsvExporter implements Exporter {
         Files.write(Paths.get(resultFile), lines);
     }
 
-    public static final class CsvExporterBuilder implements ExporterBuilder
-    {
+    public static final class CsvExporterBuilder implements ExporterBuilder {
         private String product;
         private Settings settings;
 
