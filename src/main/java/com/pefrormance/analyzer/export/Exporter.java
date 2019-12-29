@@ -11,7 +11,7 @@ import java.util.Collection;
 public interface Exporter
 {
 
-    void init(String product, Settings settings) throws IOException;
+    void init(Settings settings) throws IOException;
 
-    void export (Collection<String> data) throws IOException;
+    void export (String product, Collection<String> data) throws IOException;
 }

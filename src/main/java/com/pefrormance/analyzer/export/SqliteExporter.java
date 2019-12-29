@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 
 /**
@@ -17,31 +18,26 @@ import java.util.Collection;
  */
 public class SqliteExporter implements Exporter {
     private static final String DB_URI_PREFIX = "jdbc:sqlite:file:";
-    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (UpdateRegion TEXT, Details CLOB)";
-    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, Details) VALUES (?, ?)";
-    private  final String product;
+    // TODO: or move to enum {value, tableName}
+    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE PRODUCT_%s (UpdateRegion TEXT, Details CLOB)";
+    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO PRODUCT_%s (UpdateRegion, Details) VALUES (?, ?)";
     private  final String resultDbFile;
 
-    private SqliteExporter(SqliteExporterBuilder builder) {
-        Settings settings = builder.settings;
-        this.product = builder.product;
+
+    public SqliteExporter(Settings settings) {
         this.resultDbFile = settings.getResultsFolder().resolve("AGGREGATED_LOG" + settings.getOutputFormat().getFormat()).toString();
     }
 
     @Override
-    public void init(String product, Settings settings) throws IOException {
+    public void init(Settings settings) throws IOException {
         Path outputDbFile = Paths.get(resultDbFile);
         Files.createDirectories(settings.getResultsFolder());
-        if (!Files.exists(outputDbFile))
-        {
-            Files.createFile(outputDbFile);
-        }
-      /*  Files.deleteIfExists(outputDbFile);
-        Files.createFile(outputDbFile);*/
+        Files.deleteIfExists(outputDbFile);
+        Files.createFile(outputDbFile);
     }
 
     @Override
-    public void export(Collection<String> data) {
+    public void export(String product, Collection<String> data) {
         synchronized (SqliteExporter.class)
         {
             try(Connection connection = getConnection())
@@ -52,9 +48,12 @@ public class SqliteExporter implements Exporter {
 
                 for (String row : data)
                 {
+                    // TODO: exclude data; logLevel to another column
+                    // AUS,2019-12-13 00:53:16,512 - WARN  -> [com.navteq.psf.basicnav.bmd.jts.JtsIO] Found a not simple geometry with 621 points
+                    // [AUS, 2019-12-13 00:53:16, 512 - WARN  -> [com.navteq.psf.basicnav.bmd.jts.JtsIO] Found a not simple geometry with 621 points]
                     String [] values = row.split(",");
                     statement.setString(1, values[0]);
-                    statement.setString(2, values[1]);
+                    statement.setString(2, values.length > 2 ? values[2] : values[1]);
                     statement.addBatch();
                 }
                 statement.executeBatch();
@@ -64,6 +63,18 @@ public class SqliteExporter implements Exporter {
             catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void vacuum()
+    {
+        try(Connection connection = getConnection();
+            Statement statement = connection.createStatement();)
+        {
+            statement.execute("VACUUM");
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -79,28 +90,5 @@ public class SqliteExporter implements Exporter {
     private String getInsertQuery(String product)
     {
         return String.format(INSERT_TABLE_TEMPLATE, product);
-    }
-
-    public static final class SqliteExporterBuilder implements ExporterBuilder
-    {
-        private String product;
-        private Settings settings;
-
-        @Override
-        public ExporterBuilder product(String product) {
-            this.product = product;
-            return this;
-        }
-
-        @Override
-        public ExporterBuilder settings(Settings settings) {
-            this.settings = settings;
-            return this;
-        }
-
-        @Override
-        public Exporter build() {
-            return new SqliteExporter(this);
-        }
     }
 }

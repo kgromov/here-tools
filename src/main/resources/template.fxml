@@ -51,8 +51,8 @@
         <fx:define>
             <ToggleGroup fx:id="toggle"/>
         </fx:define>
-        <RadioButton text=".csv" fx:id="CSV" toggleGroup="$toggle" selected="true"/>
-        <RadioButton text=".sq3" fx:id="SQ3" toggleGroup="$toggle"/>
+        <RadioButton text=".csv" fx:id="CSV" toggleGroup="$toggle"/>
+        <RadioButton text=".sq3" fx:id="SQ3" toggleGroup="$toggle" selected="true"/>
     </HBox>
 
     <Button fx:id="outputDir" text="Select output directory:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>

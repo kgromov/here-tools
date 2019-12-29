@@ -78,22 +78,31 @@ public class ConsoleLogsParserApplication extends Application {
                     .findFirst()
                     .orElse(OutputFormat.CSV);
 
+            LogFile logFile = LogFile.getLogFile(logLevel.getValue());
+
             settings = new Settings.Builder()
                     .product(productCheckBoxes.stream().map(Labeled::getText).collect(Collectors.toSet()))
                     .updateRegion(updateRegion.getText())
                     .mapPath(mapPath.getText())
                     .expressionToFind(expressionToFind.getText())
-                    .logFile(LogFile.getLogFile(logLevel.getValue()))
+                    .logFile(logFile)
                     .outputFormat(format)
                     .outputDir(outputDirPath.getText())
                     .build();
 
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText(null);
+
             if (mapPath.getText() == null || mapPath.getText().isEmpty() || !mapPath.getText().startsWith(S3_PREFIX))
             {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Invalid path to s3");
-                alert.setHeaderText(null);
                 alert.setContentText("Specify valid path to s3 map logs!");
+                alert.showAndWait();
+            }
+            if (logFile == LogFile.NONE)
+            {
+                alert.setTitle("LogLevel is not specified");
+                alert.setContentText("Specify valid log level to parse!");
                 alert.showAndWait();
             }
             System.out.println(settings);
