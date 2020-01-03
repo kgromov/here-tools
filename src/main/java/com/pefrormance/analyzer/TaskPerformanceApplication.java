@@ -3,6 +3,7 @@ package com.pefrormance.analyzer;
 import com.pefrormance.analyzer.model.Settings;
 import com.pefrormance.analyzer.service.TasksTimeAnalyzer;
 import javafx.application.Application;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,7 +11,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -19,6 +22,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class TaskPerformanceApplication extends Application {
@@ -45,6 +49,23 @@ public class TaskPerformanceApplication extends Application {
     private Button start;
     @FXML
     private Button reset;
+    @FXML
+    private ProgressBar progressBar;
+    @FXML
+    private Label progressLabel;
+
+    private boolean validate() {
+        if (map1Path.getText() == null || map1Path.getText().isEmpty() || !map1Path.getText().startsWith(S3_PREFIX)
+                || map2Path.getText() == null || map2Path.getText().isEmpty() || !map2Path.getText().startsWith(S3_PREFIX)) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Invalid path(s) to s3");
+            alert.setHeaderText(null);
+            alert.setContentText("Specify valid path to s3 for first and second paths!");
+            alert.showAndWait();
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -55,11 +76,12 @@ public class TaskPerformanceApplication extends Application {
          */
         // TODO: or try first without controllers
         Parent root = FXMLLoader.load(getClass().getResource("/template.fxml"));
-
+        AtomicInteger progress = new AtomicInteger();
         initElements(root);
 
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setInitialDirectory(Paths.get(".").normalize().toAbsolutePath().toFile());
+
         //start
         start.setOnAction(e ->
         {
@@ -80,32 +102,25 @@ public class TaskPerformanceApplication extends Application {
                     .outputDir(outputDirPath.getText())
                     .build();
 
-            if (map1Path.getText() == null || map1Path.getText().isEmpty() || !map1Path.getText().startsWith(S3_PREFIX)
-                   || map2Path.getText() == null || map2Path.getText().isEmpty() || !map2Path.getText().startsWith(S3_PREFIX))
-            {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Invalid path(s) to s3");
-                alert.setHeaderText(null);
-                alert.setContentText("Specify valid path to s3 for first and second paths!");
-                alert.showAndWait();
-            }
+            /*if (!validate()) {
+                return;
+            }*/
+
             System.out.println(settings);
+
+            progressBar.setProgress(0);
+            progressBar.progressProperty().unbind();
+            progressLabel.textProperty().unbind();
 
             reset.setDisable(true);
             start.setDisable(true);
 
-            Thread thread = new Thread(() ->
-            {
-                TasksTimeAnalyzer analyzer = new TasksTimeAnalyzer(settings);
-                analyzer.run();
-                analyzer.removeLogFiles();
-            });
-            thread.start();
-            try {
-                thread.join();
-            } catch (InterruptedException e1) {
-                Thread.currentThread().interrupt();
-            }
+            System.out.println("Reset = " + reset.isDisabled());
+
+            Task<Void> task = new TasksTimeAnalyzer(settings);
+            progressBar.progressProperty().bind(task.progressProperty());
+            progressLabel.textProperty().bind(task.messageProperty());
+            new Thread(task).start();
 
             start.setDisable(false);
             reset.setDisable(false);
@@ -124,8 +139,12 @@ public class TaskPerformanceApplication extends Application {
                     .forEach(c -> c.setSelected(false));
             outputDirPath.setText(null);
             outputDirPath.setEditable(true);
-            if (settings != null)
-            {
+            progressBar.progressProperty().unbind();
+            progressBar.setProgress(0.0);
+            progress.set(0);
+            progressLabel.textProperty().unbind();
+            progressLabel.setText("Progress: ");
+            if (settings != null) {
                 settings.reset();
             }
         });
@@ -143,8 +162,7 @@ public class TaskPerformanceApplication extends Application {
         stage.show();
     }
 
-    private void initElements(Parent root)
-    {
+    private void initElements(Parent root) {
         map1Path = (TextField) root.lookup("#map1Path");
         map1Name = (TextField) root.lookup("#map1Name");
         map2Path = (TextField) root.lookup("#map2Path");
@@ -155,6 +173,9 @@ public class TaskPerformanceApplication extends Application {
         outputDirPath = (TextField) root.lookup("#outputDirPath");
         start = (Button) root.lookup("#start");
         reset = (Button) root.lookup("#reset");
+        progressBar = (ProgressBar) root.lookup("#progressBar");
+        progressBar.setProgress(0);
+        progressLabel = (Label) root.lookup("#progressLabel");
     }
 
     public static void main(String[] args) {
