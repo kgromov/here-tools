@@ -18,6 +18,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -26,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class TaskPerformanceApplication extends Application {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskPerformanceApplication.class);
     private static final String S3_PREFIX = "s3://";
 
     private Settings settings;
@@ -62,6 +65,7 @@ public class TaskPerformanceApplication extends Application {
             alert.setHeaderText(null);
             alert.setContentText("Specify valid path to s3 for first and second paths!");
             alert.showAndWait();
+            LOGGER.warn("Specified invalid path to s3://");
             return false;
         }
         return true;
@@ -85,7 +89,6 @@ public class TaskPerformanceApplication extends Application {
         //start
         start.setOnAction(e ->
         {
-            reset.setDisable(false);
             Set<CheckBox> productCheckBoxes = products.getChildren().stream()
                     .filter(c -> c.getClass().equals(CheckBox.class))
                     .map(c -> (CheckBox) c)
@@ -102,28 +105,22 @@ public class TaskPerformanceApplication extends Application {
                     .outputDir(outputDirPath.getText())
                     .build();
 
-            /*if (!validate()) {
+            if (!validate()) {
                 return;
-            }*/
+            }
+            LOGGER.info(settings.toString());
 
-            System.out.println(settings);
-
-            progressBar.setProgress(0);
             progressBar.progressProperty().unbind();
             progressLabel.textProperty().unbind();
-
-            reset.setDisable(true);
-            start.setDisable(true);
-
-            System.out.println("Reset = " + reset.isDisabled());
+            start.disableProperty().unbind();
+            reset.disableProperty().unbind();
 
             Task<Void> task = new TasksTimeAnalyzer(settings);
             progressBar.progressProperty().bind(task.progressProperty());
             progressLabel.textProperty().bind(task.messageProperty());
+            start.disableProperty().bind(task.runningProperty());
+            reset.disableProperty().bind(task.runningProperty());
             new Thread(task).start();
-
-            start.setDisable(false);
-            reset.setDisable(false);
         });
         // reset
         reset.setOnAction(action ->
@@ -140,7 +137,7 @@ public class TaskPerformanceApplication extends Application {
             outputDirPath.setText(null);
             outputDirPath.setEditable(true);
             progressBar.progressProperty().unbind();
-            progressBar.setProgress(0.0);
+            progressBar.setProgress(0);
             progress.set(0);
             progressLabel.textProperty().unbind();
             progressLabel.setText("Progress: ");

@@ -1,7 +1,9 @@
-package com.pefrormance.analyzer.service;
+package com.pefrormance.analyzer.export;
 
 import com.pefrormance.analyzer.model.TaskBean;
 import com.pefrormance.analyzer.model.TasksHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,17 +17,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ResultsExporter
+public class RegionResultsExporter
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegionResultsExporter.class);
     private static final String DB_URI_PREFIX = "jdbc:sqlite:file:";
     private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (TaskName TEXT, '%s' REAL, '%s' REAL)";
     private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (TaskName, '%s', '%s') VALUES (?, ?, ?)";
+
     private final String product;
     private final String version1;
     private final String version2;
     private String resultDbFile;
 
-    public ResultsExporter(String product, String version1, String version2) {
+    public RegionResultsExporter(String product, String version1, String version2) {
         this.product = product;
         this.version1 = version1;
         this.version2 = version2;
@@ -43,6 +47,7 @@ public class ResultsExporter
 
     public void exportRegion(String region, TasksHolder first, TasksHolder second)
     {
+        LOGGER.info("Export data for region = "+ region);
         Map<String, Double> tasksFirst =  first.getTasks().stream()
                 .collect(Collectors.toMap(TaskBean::getName, TaskBean::getDuration));
 
@@ -52,7 +57,7 @@ public class ResultsExporter
         Set<String> allTaskNames = new HashSet<>(tasksFirst.keySet());
         allTaskNames.addAll(tasksSecond.keySet());
 
-        synchronized (ResultsExporter.class)
+        synchronized (RegionResultsExporter.class)
         {
             try(Connection connection = getConnection())
             {
@@ -63,7 +68,6 @@ public class ResultsExporter
                 for (String taskName : allTaskNames)
                 {
                     statement.setString(1, taskName);
-                    // doubts about null
                     statement.setObject(2, tasksFirst.get(taskName));
                     statement.setObject(3, tasksSecond.get(taskName));
                     statement.addBatch();
@@ -78,7 +82,7 @@ public class ResultsExporter
                 statement.close();
             }
             catch (SQLException e) {
-                e.printStackTrace();
+               LOGGER.error(String.format("Unable to export data for region = %s", region), e);
             }
         }
     }
