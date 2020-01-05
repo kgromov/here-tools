@@ -14,6 +14,7 @@ public class Settings
     private static final String DEFAULT_VERSION1 = "map1";
     private static final String DEFAULT_VERSION2 = "map2";
 
+    // TODO: probably to enum: name; tableName
     private Set<String> products;
     private String updateRegion;
     private String map1Path;
@@ -33,14 +34,19 @@ public class Settings
       this.outputDir = builder.outputDir == null ? Paths.get(".").normalize().toAbsolutePath().toString() : builder.outputDir;
     }
 
-    public Path getLogsFolder()
+    public Path getDataFolder()
     {
-        return Paths.get(outputDir).resolve("logs");
+        return Paths.get(outputDir).resolve("data");
     }
 
     public Path getResultsFolder()
     {
         return Paths.get(outputDir).resolve("results");
+    }
+
+    public Path getLogsFolder()
+    {
+        return Paths.get(outputDir).resolve("logs");
     }
 
     private static String getVersion(String path, String defaultValue)

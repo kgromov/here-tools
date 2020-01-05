@@ -1,0 +1,27 @@
+<configuration>
+
+    <!--<Property name="pattern" value = "[%d{yyyy.MM.dd-HH:mm:ss}]:%-5level - %msg%n" />-->
+    <Property name="pattern" value = "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
+    <timestamp key="myTimestamp" datePattern="yyyy-MM-dd'_'HH-mm-ss"/>
+
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/performance-analyzer-${myTimestamp}.log</file>
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <root level="debug">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>

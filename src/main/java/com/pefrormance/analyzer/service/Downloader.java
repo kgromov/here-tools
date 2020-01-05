@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.util.function.Consumer;
 
 public class Downloader {
-    // TODO: probably move to enum; for WOM market is required not UR
     private static final String AWS_COPY_COMMAND = "aws s3 cp";
     private static final String AWS_SYNC_COMMAND = "aws s3 sync";
     private final String product;
@@ -26,14 +25,17 @@ public class Downloader {
         ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", command);
         builder.redirectErrorStream(true);
         Process process = builder.start();
-        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String s;
-        while ((s = stdInput.readLine()) != null) {
-            logConsumer.accept(s);
+        try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream())))
+        {
+            String s;
+            while ((s = stdInput.readLine()) != null) {
+                logConsumer.accept(s);
+            }
         }
     }
 
     // aws s3 cp <s3_path> <local_path> --recursive --exclude "*" --include "LC_*json" | --include "FB_MUC_*json"
+    // aws s3 sync <s3_path> <local_path> --exclude "*" --include "LC_*json" | --include "FB_MUC_*json"
     private String getAwsCopyCommand()
     {
 //        StringBuilder commandBuilder = new StringBuilder(AWS_COPY_COMMAND);
@@ -43,7 +45,7 @@ public class Downloader {
                 .append(' ')
                 .append(destPath)
                 .append(' ')
-//                .append("--recursive --exclude \"*\"")
+//                .append("--recursive ")
                 .append("--exclude \"*\"")
                 .append(' ')
                 .append("--include \"")
