@@ -57,14 +57,14 @@ public class TasksTimeAnalyzer extends Task<Void>{
                     List<Future<?>> results = new ArrayList<>(2);
                     results.add(executor.submit(() -> {
                         try {
-                            new Downloader(product, settings.getUpdateRegion(), settings.getMap1Path(), outputDir).download(LOGGER::debug);
+                            new Downloader(product.getName(), settings.getUpdateRegion(), settings.getMap1Path(), outputDir).download(LOGGER::debug);
                         } catch (Exception e) {
                             LOGGER.error(String.format("Error occurred while processing %s, product = %s", settings.getMap1Path(), product), e);
                         }
                     }));
                     results.add(executor.submit(() -> {
                         try {
-                            new Downloader(product, settings.getUpdateRegion(), settings.getMap2Path(), outputDir).download(LOGGER::debug);
+                            new Downloader(product.getName(), settings.getUpdateRegion(), settings.getMap2Path(), outputDir).download(LOGGER::debug);
                         } catch (Exception e) {
                             LOGGER.error(String.format("Error occurred while processing %s, product = %s", settings.getMap2Path(), product), e);
                         }
@@ -78,7 +78,7 @@ public class TasksTimeAnalyzer extends Task<Void>{
                     });
                     LOGGER.info("Finish downloading files for product = " + product);
 
-                    LogsHolder logsHolder = new LogsHolder(product);
+                    LogsHolder logsHolder = new LogsHolder(product.getName());
                     Map<String, Collection<ResultRowBean>> data = logsHolder.bypassLogs(settings);
                     exporter.export(product, data);
 

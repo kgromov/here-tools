@@ -1,5 +1,6 @@
 package com.pefrormance.analyzer.export;
 
+import com.pefrormance.analyzer.model.Product;
 import com.pefrormance.analyzer.model.ResultRowBean;
 import com.pefrormance.analyzer.model.Settings;
 import org.slf4j.Logger;
@@ -22,8 +23,8 @@ import java.util.Map;
 public class AggregatedResultsExporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AggregatedResultsExporter.class);
     private static final String DB_URI_PREFIX = "jdbc:sqlite:file:";
-    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE PRODUCT_%s (UpdateRegion TEXT, TaskName TEXT, '%s' REAL, '%s' REAL)";
-    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO PRODUCT_%s (UpdateRegion, TaskName, '%s', '%s') VALUES (?, ?, ?, ?)";
+    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (UpdateRegion TEXT, TaskName TEXT, '%s' REAL, '%s' REAL)";
+    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, TaskName, '%s', '%s') VALUES (?, ?, ?, ?)";
 
     private final String version1;
     private final String version2;
@@ -50,16 +51,16 @@ public class AggregatedResultsExporter {
         }
     }
 
-    public void export(String product, Map<String, Collection<ResultRowBean>> resultRowsPerRegion)
+    public void export(Product product, Map<String, Collection<ResultRowBean>> resultRowsPerRegion)
     {
         LOGGER.info("Export data for product = "+ product);
         synchronized (AggregatedResultsExporter.class)
         {
             try(Connection connection = getConnection())
             {
-                connection.createStatement().execute(getCreateQuery(product));
+                connection.createStatement().execute(getCreateQuery(product.getTableName()));
                 connection.setAutoCommit(false);
-                PreparedStatement statement = connection.prepareStatement(getInsertQuery(product));
+                PreparedStatement statement = connection.prepareStatement(getInsertQuery(product.getTableName()));
 
                 for (Map.Entry<String, Collection<ResultRowBean>> entry : resultRowsPerRegion.entrySet())
                 {

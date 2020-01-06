@@ -1,5 +1,6 @@
 package com.pefrormance.analyzer;
 
+import com.pefrormance.analyzer.model.Product;
 import com.pefrormance.analyzer.model.Settings;
 import com.pefrormance.analyzer.service.TasksTimeAnalyzer;
 import javafx.application.Application;
@@ -96,7 +97,7 @@ public class TaskPerformanceApplication extends Application {
                     .collect(Collectors.toSet());
 
             settings = new Settings.Builder()
-                    .product(productCheckBoxes.stream().map(Labeled::getText).collect(Collectors.toSet()))
+                    .product(productCheckBoxes.stream().map(Labeled::getText).map(Product::getProductByName).collect(Collectors.toSet()))
                     .updateRegion(updateRegion.getText())
                     .map1Path(map1Path.getText())
                     .map2Path(map2Path.getText())

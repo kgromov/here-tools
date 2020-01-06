@@ -2,7 +2,7 @@ package com.pefrormance.analyzer.model;
 
 public enum Product {
     LC("LC", "LIVE_CACHE"),
-    FB("FB", "LIVE_CACHE"),
+    FB("FB", "FALLBACK"),
     THREE_D("3D", "THREE_D"),
     WOM("WOM", "WOM");
 
@@ -12,6 +12,10 @@ public enum Product {
     Product(String name, String tableName) {
         this.name = name;
         this.tableName = tableName;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getTableName() {

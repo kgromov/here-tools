@@ -14,8 +14,7 @@ public class Settings
     private static final String DEFAULT_VERSION1 = "map1";
     private static final String DEFAULT_VERSION2 = "map2";
 
-    // TODO: probably to enum: name; tableName
-    private Set<String> products;
+    private Set<Product> products;
     private String updateRegion;
     private String map1Path;
     private String map1Name;
@@ -81,7 +80,7 @@ public class Settings
 
     public static final class Builder
     {
-        private Set<String> products;
+        private Set<Product> products;
         private String updateRegion;
         private String map1Path;
         private String map1Name;
@@ -94,7 +93,7 @@ public class Settings
             return new Settings(this);
         }
 
-        public Builder product(Set<String> products)
+        public Builder product(Set<Product> products)
         {
             this.products = products;
             return this;
