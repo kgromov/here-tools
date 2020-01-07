@@ -2,9 +2,11 @@ package com.pefrormance.analyzer;
 
 import com.pefrormance.analyzer.export.OutputFormat;
 import com.pefrormance.analyzer.model.LogFile;
+import com.pefrormance.analyzer.model.Product;
 import com.pefrormance.analyzer.model.Settings;
 import com.pefrormance.analyzer.service.ConsoleLogsManager;
 import javafx.application.Application;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,6 +16,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -21,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ConsoleLogsParserApplication extends Application {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleLogsParserApplication.class);
     private static final String S3_PREFIX = "s3://";
 
     private Settings settings;
@@ -44,6 +49,35 @@ public class ConsoleLogsParserApplication extends Application {
     private Button start;
     @FXML
     private Button reset;
+    @FXML
+    private ProgressBar progressBar;
+    @FXML
+    private Label progressLabel;
+
+    private boolean validate(LogFile logFile)
+    {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setHeaderText(null);
+
+        String mapPathText = mapPath.getText();
+        if (mapPathText == null || mapPathText.isEmpty() || !mapPathText.startsWith(S3_PREFIX))
+        {
+            alert.setTitle("Invalid path to s3");
+            alert.setContentText("Specify valid path to s3 map logs!");
+            alert.showAndWait();
+            LOGGER.warn("Specified invalid path to s3://" + mapPathText);
+            return false;
+        }
+        if (logFile == LogFile.NONE)
+        {
+            alert.setTitle("LogLevel is not specified");
+            alert.setContentText("Specify valid log level to parse!");
+            alert.showAndWait();
+            LOGGER.warn("Log level to parse is not specified");
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -62,7 +96,6 @@ public class ConsoleLogsParserApplication extends Application {
         //start
         start.setOnAction(e ->
         {
-            reset.setDisable(false);
             Set<CheckBox> productCheckBoxes = products.getChildren().stream()
                     .filter(c -> c.getClass().equals(CheckBox.class))
                     .map(c -> (CheckBox) c)
@@ -81,7 +114,7 @@ public class ConsoleLogsParserApplication extends Application {
             LogFile logFile = LogFile.getLogFile(logLevel.getValue());
 
             settings = new Settings.Builder()
-                    .product(productCheckBoxes.stream().map(Labeled::getText).collect(Collectors.toSet()))
+                    .product(productCheckBoxes.stream().map(Labeled::getText).map(Product::getProductByName).collect(Collectors.toSet()))
                     .updateRegion(updateRegion.getText())
                     .mapPath(mapPath.getText())
                     .expressionToFind(expressionToFind.getText())
@@ -90,41 +123,22 @@ public class ConsoleLogsParserApplication extends Application {
                     .outputDir(outputDirPath.getText())
                     .build();
 
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText(null);
-
-            if (mapPath.getText() == null || mapPath.getText().isEmpty() || !mapPath.getText().startsWith(S3_PREFIX))
-            {
-                alert.setTitle("Invalid path to s3");
-                alert.setContentText("Specify valid path to s3 map logs!");
-                alert.showAndWait();
+            if (!validate(logFile)) {
+                return;
             }
-            if (logFile == LogFile.NONE)
-            {
-                alert.setTitle("LogLevel is not specified");
-                alert.setContentText("Specify valid log level to parse!");
-                alert.showAndWait();
-            }
-            System.out.println(settings);
+            LOGGER.info(settings.toString());
 
-            reset.setDisable(true);
-            start.setDisable(true);
+            progressBar.progressProperty().unbind();
+            progressLabel.textProperty().unbind();
+            start.disableProperty().unbind();
+            reset.disableProperty().unbind();
 
-            Thread thread = new Thread(() ->
-            {
-                ConsoleLogsManager analyzer = new ConsoleLogsManager(settings);
-                analyzer.run();
-                analyzer.removeLogFiles();
-            });
-            thread.start();
-            try {
-                thread.join();
-            } catch (InterruptedException e1) {
-                Thread.currentThread().interrupt();
-            }
-
-            start.setDisable(false);
-            reset.setDisable(false);
+            Task<Void> task = new ConsoleLogsManager(settings);
+            progressBar.progressProperty().bind(task.progressProperty());
+            progressLabel.textProperty().bind(task.messageProperty());
+            start.disableProperty().bind(task.runningProperty());
+            reset.disableProperty().bind(task.runningProperty());
+            new Thread(task).start();
         });
         // reset
         reset.setOnAction(action ->
@@ -136,9 +150,18 @@ public class ConsoleLogsParserApplication extends Application {
                     .map(c -> (CheckBox) c)
                     .forEach(c -> c.setSelected(false));
             logLevel.setValue("--None--");
+            outputFormat.getChildren().stream()
+                    .filter(c -> c.getClass().equals(RadioButton.class))
+                    .map(c -> (RadioButton) c)
+                    .filter(r -> !r.isSelected())
+                    .forEach(RadioButton::fire);
             expressionToFind.setText(null);
             outputDirPath.setText(null);
             outputDirPath.setEditable(true);
+            progressBar.progressProperty().unbind();
+            progressBar.setProgress(0);
+            progressLabel.textProperty().unbind();
+            progressLabel.setText("Progress: ");
             if (settings != null)
             {
                 settings.reset();
@@ -170,6 +193,9 @@ public class ConsoleLogsParserApplication extends Application {
         outputDirPath = (TextField) root.lookup("#outputDirPath");
         start = (Button) root.lookup("#start");
         reset = (Button) root.lookup("#reset");
+        progressBar = (ProgressBar) root.lookup("#progressBar");
+        progressBar.setProgress(0);
+        progressLabel = (Label) root.lookup("#progressLabel");
     }
 
     public static void main(String[] args) {

@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.util.function.Consumer;
 
 public class Downloader {
-    // TODO: probably move to enum; for WOM market is required not UR
     private static final String AWS_COPY_COMMAND = "aws s3 cp";
     private static final String AWS_SYNC_COMMAND = "aws s3 sync";
     private final String product;

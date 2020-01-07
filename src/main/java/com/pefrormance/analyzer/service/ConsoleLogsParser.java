@@ -1,6 +1,8 @@
 package com.pefrormance.analyzer.service;
 
 import com.pefrormance.analyzer.model.Settings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +18,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ConsoleLogsParser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleLogsParser.class);
 
     private static final Function<File, String> FILE_TO_REGION = path ->
     {
@@ -38,7 +41,8 @@ public class ConsoleLogsParser {
         String filSuffix = settings.getLogFile().getFileName();
         String expression = settings.getExpressionToFind();
 
-        Files.find(settings.getLogsFolder(),
+        LOGGER.info("Start processing product = " + product);
+        Files.find(settings.getDataFolder(),
                 Short.MAX_VALUE,
                 (filePath, fileAttr) -> fileAttr.isRegularFile()
                         && filePath.getFileName().toString().startsWith(product)
@@ -48,7 +52,7 @@ public class ConsoleLogsParser {
                 .parallel()
                 .forEach(file ->
                 {
-                    System.out.println("Processing " + file.getName() + " file.");
+                    LOGGER.debug("Processing " + file.getName() + " file.");
                     String uRName = FILE_TO_REGION.apply(file);
                     try (FileInputStream fileInputStream = new FileInputStream(file);
                          ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
@@ -72,13 +76,14 @@ public class ConsoleLogsParser {
                             }
                             count.incrementAndGet();
                             if (count.get() > 1L && count.get() % 10000L == 0L) {
-                                System.out.println("Processed " + count + " rows.");
+                                LOGGER.debug("Processed " + count + " rows.");
                             }
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        LOGGER.error("Error occurred while processiing " + file, e);
                     }
                 });
+        LOGGER.info("Finish processing product = " + product);
         return lines;
     }
 }

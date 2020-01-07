@@ -1,6 +1,9 @@
 package com.pefrormance.analyzer.export;
 
+import com.pefrormance.analyzer.model.Product;
 import com.pefrormance.analyzer.model.Settings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,10 +20,10 @@ import java.util.Collection;
  * Created by konstantin on 22.12.2019.
  */
 public class SqliteExporter implements Exporter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqliteExporter.class);
     private static final String DB_URI_PREFIX = "jdbc:sqlite:file:";
-    // TODO: or move to enum {value, tableName}
-    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE PRODUCT_%s (UpdateRegion TEXT, Details CLOB)";
-    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO PRODUCT_%s (UpdateRegion, Details) VALUES (?, ?)";
+    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (UpdateRegion TEXT, Details CLOB)";
+    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, Details) VALUES (?, ?)";
     private  final String resultDbFile;
 
 
@@ -29,22 +32,30 @@ public class SqliteExporter implements Exporter {
     }
 
     @Override
-    public void init(Settings settings) throws IOException {
-        Path outputDbFile = Paths.get(resultDbFile);
-        Files.createDirectories(settings.getResultsFolder());
-        Files.deleteIfExists(outputDbFile);
-        Files.createFile(outputDbFile);
+    public void init(Settings settings) {
+        try {
+            Path outputDbFile = Paths.get(resultDbFile);
+            Files.createDirectories(settings.getResultsFolder());
+            Files.deleteIfExists(outputDbFile);
+            Files.createFile(outputDbFile);
+        }
+        catch (IOException e)
+        {
+            LOGGER.error("Unable to init console logs analyzer result file", e);
+            throw new RuntimeException("Unable to init console logs analyzer result file", e);
+        }
     }
 
     @Override
-    public void export(String product, Collection<String> data) {
+    public void export(Product product, Collection<String> data) {
+        LOGGER.info("Export data for product = " + product);
         synchronized (SqliteExporter.class)
         {
             try(Connection connection = getConnection())
             {
-                connection.createStatement().execute(getCreateQuery(product));
+                connection.createStatement().execute(getCreateQuery(product.getTableName()));
                 connection.setAutoCommit(false);
-                PreparedStatement statement = connection.prepareStatement(getInsertQuery(product));
+                PreparedStatement statement = connection.prepareStatement(getInsertQuery(product.getTableName()));
 
                 for (String row : data)
                 {
@@ -61,7 +72,7 @@ public class SqliteExporter implements Exporter {
                 statement.close();
             }
             catch (SQLException e) {
-                e.printStackTrace();
+                LOGGER.error(String.format("Unable to export product %s data", product), e);
             }
         }
     }
@@ -71,10 +82,11 @@ public class SqliteExporter implements Exporter {
         try(Connection connection = getConnection();
             Statement statement = connection.createStatement();)
         {
+            connection.setAutoCommit(true);
             statement.execute("VACUUM");
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Unable to perform vacuum over resultDbFile = " + resultDbFile, e);
         }
     }
 

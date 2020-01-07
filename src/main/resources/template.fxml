@@ -56,9 +56,12 @@
     </HBox>
 
     <Button fx:id="outputDir" text="Select output directory:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-    <TextField fx:id="outputDirPath" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+    <TextField fx:id="outputDirPath" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
-    <HBox GridPane.rowIndex="6" GridPane.columnSpan="2" alignment="BOTTOM_CENTER" GridPane.rowSpan="10">
+    <Label fx:id="progressLabel" text="Progress: " GridPane.rowIndex="6" GridPane.columnIndex="0" />
+    <ProgressBar fx:id="progressBar" GridPane.rowIndex="6" GridPane.columnIndex="1" />
+
+    <HBox GridPane.rowIndex="8" GridPane.columnSpan="2" alignment="BOTTOM_CENTER" GridPane.rowSpan="10">
         <Button text="Start" fx:id="start"/>
         <Button text="Reset" fx:id="reset"/>
     </HBox>

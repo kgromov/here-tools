@@ -5,7 +5,6 @@ import com.pefrormance.analyzer.export.SqliteExporter;
 import com.pefrormance.analyzer.model.LogFile;
 import com.pefrormance.analyzer.model.Product;
 import com.pefrormance.analyzer.model.Settings;
-import javafx.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,35 +14,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.NumberFormat;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
  * Created by konstantin on 22.12.2019.
  */
-public class ConsoleLogsManager extends Task<Void> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleLogsManager.class);
-    private static final NumberFormat FORMAT = NumberFormat.getPercentInstance();
+public class DummyConsoleLogsManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DummyConsoleLogsManager.class);
+
     private final Settings settings;
 
-    public ConsoleLogsManager(Settings settings) {
+    public DummyConsoleLogsManager(Settings settings) {
         this.settings = settings;
     }
 
-    @Override
-    public Void call() {
+    public void run() {
         long start = System.nanoTime();
-        AtomicInteger progress = new AtomicInteger();
         try
         {
-            updateProgress(progress.get(), settings.getProducts().size());
-            updateMessage("Progress: " + FORMAT.format(progress.doubleValue() / settings.getProducts().size()));
             String outputDir = settings.getDataFolder().toString();
 
             SqliteExporter exporter = new SqliteExporter(settings);
@@ -62,10 +54,6 @@ public class ConsoleLogsManager extends Task<Void> {
                     List<String> outputData =  parser.bypass(settings);
                     // export
                     exporter.export(product, outputData);
-
-                    progress.incrementAndGet();
-                    updateProgress(progress.get(), settings.getProducts().size());
-                    updateMessage("Progress: " + FORMAT.format(progress.doubleValue() / settings.getProducts().size()));
                     LOGGER.info("Finish processing product = " + product);
                 } catch (Exception e) {
                     LOGGER.error(String.format("Error occurred while processing %s, product = %s", settings.getMapPath(), product), e);
@@ -76,7 +64,6 @@ public class ConsoleLogsManager extends Task<Void> {
         {
             LOGGER.info(String.format("Time elapsed = %d s", TimeUnit.SECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)));
         }
-        return null;
     }
 
     public void removeLogFiles() {

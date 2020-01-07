@@ -12,11 +12,9 @@ import java.util.Set;
 @ToString
 public class Settings
 {
-    private Set<String> products;
+    private Set<Product> products;
     private String updateRegion;
     private String mapPath;
-    // TODO: probably add name parameter
-//    private String resultFileName;
     private LogFile logFile;
     private String expressionToFind;
     private OutputFormat outputFormat;
@@ -33,16 +31,15 @@ public class Settings
       this.outputDir = builder.outputDir == null ? Paths.get(".").normalize().toAbsolutePath().toString() : builder.outputDir;
     }
 
-    public Path getLogsFolder()
+    public Path getDataFolder()
     {
-        return Paths.get(outputDir).resolve("logs");
+        return Paths.get(outputDir).resolve("data");
     }
 
     public Path getResultsFolder()
     {
         return Paths.get(outputDir).resolve("results");
     }
-
 
     public void reset()
     {
@@ -57,7 +54,7 @@ public class Settings
 
     public static final class Builder
     {
-        private Set<String> products;
+        private Set<Product> products;
         private String updateRegion;
         private String mapPath;
         private LogFile logFile;
@@ -70,7 +67,7 @@ public class Settings
             return new Settings(this);
         }
 
-        public Builder product(Set<String> products)
+        public Builder product(Set<Product> products)
         {
             this.products = products;
             return this;
