@@ -4,6 +4,7 @@ import com.pefrormance.analyzer.export.OutputFormat;
 import com.pefrormance.analyzer.export.SqliteExporter;
 import com.pefrormance.analyzer.model.LogFile;
 import com.pefrormance.analyzer.model.Product;
+import com.pefrormance.analyzer.model.ResultRow;
 import com.pefrormance.analyzer.model.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +16,11 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -45,13 +48,14 @@ public class DummyConsoleLogsManager {
             {
                 LOGGER.info("Start processing product = " + product);
                 try {
-                    LOGGER.info("Start downloading files for product = " + product);
+                   /* LOGGER.info("Start downloading files for product = " + product);
                     // download
                     new Downloader(product.getName(), settings.getUpdateRegion(), settings.getMapPath(), outputDir).download(LOGGER::debug);
-                    LOGGER.info("Finish downloading files for product = " + product);
+                    LOGGER.info("Finish downloading files for product = " + product);*/
                     // bypass
                     ConsoleLogsParser parser = new ConsoleLogsParser(product.getName());
-                    List<String> outputData =  parser.bypass(settings);
+                    List<ResultRow> outputData = parser.bypass(settings);
+//                    Set<ResultRow> outputData =  new LinkedHashSet<>(parser.bypass(settings));
                     // export
                     exporter.export(product, outputData);
                     LOGGER.info("Finish processing product = " + product);
@@ -88,6 +92,11 @@ public class DummyConsoleLogsManager {
     }
 
     public static void main(String[] args) {
+        Pattern pattern = Pattern.compile("$\\w.+(ERROR)|(WARN)|(INFO)|(DEBUG).*\\bFound a not simple geometry");
+        String message = "TUN,2019-12-13 00:39:14,061 - WARN  -> [com.navteq.psf.basicnav.bmd.jts.JtsIO] Found a not simple geometry with 10 points";
+
+
+
         String [] productNames = {"LC", "FB", "WOM"};
         Set<Product> products = Arrays.stream(productNames).map(Product::getProductByName).collect(Collectors.toSet());
 
@@ -103,6 +112,5 @@ public class DummyConsoleLogsManager {
 
         DummyConsoleLogsManager manager = new DummyConsoleLogsManager(settings);
         manager.run();
-        manager.removeLogFiles();
     }
 }

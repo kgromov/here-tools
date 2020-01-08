@@ -1,6 +1,7 @@
 package com.pefrormance.analyzer.export;
 
 import com.pefrormance.analyzer.model.Product;
+import com.pefrormance.analyzer.model.ResultRow;
 import com.pefrormance.analyzer.model.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +23,16 @@ import java.util.Collection;
 public class SqliteExporter implements Exporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SqliteExporter.class);
     private static final String DB_URI_PREFIX = "jdbc:sqlite:file:";
-    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (UpdateRegion TEXT, Details CLOB)";
-    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, Details) VALUES (?, ?)";
-    private  final String resultDbFile;
+    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (UpdateRegion TEXT, LogLevel TEXT, Details CLOB, Count INT)";
+    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, LogLevel, Details, Count) VALUES (?, ?, ?, ?)";
+    private final String resultDbFile;
 
 
     public SqliteExporter(Settings settings) {
-        this.resultDbFile = settings.getResultsFolder().resolve("AGGREGATED_LOG" + settings.getOutputFormat().getFormat()).toString();
+        this.resultDbFile = settings.getResultsFolder().resolve("AGGREGATED_LOG_v2" + settings.getOutputFormat().getFormat()).toString();
     }
+
+
 
     @Override
     public void init(Settings settings) {
@@ -47,7 +50,7 @@ public class SqliteExporter implements Exporter {
     }
 
     @Override
-    public void export(Product product, Collection<String> data) {
+    public void export(Product product, Collection<ResultRow> data) {
         LOGGER.info("Export data for product = " + product);
         synchronized (SqliteExporter.class)
         {
@@ -57,14 +60,12 @@ public class SqliteExporter implements Exporter {
                 connection.setAutoCommit(false);
                 PreparedStatement statement = connection.prepareStatement(getInsertQuery(product.getTableName()));
 
-                for (String row : data)
+                for (ResultRow row : data)
                 {
-                    // TODO: exclude data; logLevel to another column
-                    // AUS,2019-12-13 00:53:16,512 - WARN  -> [com.navteq.psf.basicnav.bmd.jts.JtsIO] Found a not simple geometry with 621 points
-                    // [AUS, 2019-12-13 00:53:16, 512 - WARN  -> [com.navteq.psf.basicnav.bmd.jts.JtsIO] Found a not simple geometry with 621 points]
-                    String [] values = row.split(",");
-                    statement.setString(1, values[0]);
-                    statement.setString(2, values.length > 2 ? values[2] : values[1]);
+                    statement.setString(1, row.getUpdateRegion());
+                    statement.setString(2, row.getLogLevel());
+                    statement.setString(3, row.getMessage());
+                    statement.setInt(4, row.getCount());
                     statement.addBatch();
                 }
                 statement.executeBatch();
@@ -76,6 +77,8 @@ public class SqliteExporter implements Exporter {
             }
         }
     }
+
+
 
     public void vacuum()
     {

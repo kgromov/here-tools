@@ -1,9 +1,7 @@
 package com.pefrormance.analyzer.service;
 
-import com.pefrormance.analyzer.export.OutputFormat;
 import com.pefrormance.analyzer.export.SqliteExporter;
-import com.pefrormance.analyzer.model.LogFile;
-import com.pefrormance.analyzer.model.Product;
+import com.pefrormance.analyzer.model.ResultRow;
 import com.pefrormance.analyzer.model.Settings;
 import javafx.concurrent.Task;
 import org.slf4j.Logger;
@@ -16,13 +14,9 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * Created by konstantin on 22.12.2019.
@@ -59,7 +53,7 @@ public class ConsoleLogsManager extends Task<Void> {
                     LOGGER.info("Finish downloading files for product = " + product);
                     // bypass
                     ConsoleLogsParser parser = new ConsoleLogsParser(product.getName());
-                    List<String> outputData =  parser.bypass(settings);
+                    List<ResultRow> outputData =  parser.bypass(settings);
                     // export
                     exporter.export(product, outputData);
 
@@ -74,6 +68,7 @@ public class ConsoleLogsManager extends Task<Void> {
             exporter.vacuum();
         }  finally
         {
+            removeLogFiles();
             LOGGER.info(String.format("Time elapsed = %d s", TimeUnit.SECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)));
         }
         return null;
@@ -98,24 +93,5 @@ public class ConsoleLogsManager extends Task<Void> {
         } catch (IOException e) {
             LOGGER.error("Unable to clear temporary data folder:", e);
         }
-    }
-
-    public static void main(String[] args) {
-        String [] productNames = {"LC", "FB", "WOM"};
-        Set<Product> products = Arrays.stream(productNames).map(Product::getProductByName).collect(Collectors.toSet());
-
-        Settings settings = new Settings.Builder()
-                .product(products)
-//                .updateRegion(updateRegion.getText())
-                .mapPath("s3://akela-artifacts/Akela-191E3/CMP-0e8a4f7/logs/")
-                .expressionToFind("Found a not simple geometry")
-                .logFile(LogFile.WARN)
-                .outputFormat(OutputFormat.SQ3)
-                .outputDir("C:\\Projects\\here-tools\\out")
-                .build();
-
-        DummyConsoleLogsManager manager = new DummyConsoleLogsManager(settings);
-        manager.run();
-        manager.removeLogFiles();
     }
 }
