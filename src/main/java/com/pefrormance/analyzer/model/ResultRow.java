@@ -9,5 +9,4 @@ public class ResultRow {
     private final String updateRegion;
     private final String logLevel;
     private final String message;
-    private final int count;
 }

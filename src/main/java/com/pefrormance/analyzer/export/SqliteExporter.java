@@ -23,16 +23,14 @@ import java.util.Collection;
 public class SqliteExporter implements Exporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SqliteExporter.class);
     private static final String DB_URI_PREFIX = "jdbc:sqlite:file:";
-    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (UpdateRegion TEXT, LogLevel TEXT, Details CLOB, Count INT)";
-    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, LogLevel, Details, Count) VALUES (?, ?, ?, ?)";
+    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (UpdateRegion TEXT, LogLevel TEXT, Details CLOB)";
+    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, LogLevel, Details) VALUES (?, ?, ?, ?)";
     private final String resultDbFile;
 
 
     public SqliteExporter(Settings settings) {
         this.resultDbFile = settings.getResultsFolder().resolve("AGGREGATED_LOG_v2" + settings.getOutputFormat().getFormat()).toString();
     }
-
-
 
     @Override
     public void init(Settings settings) {
@@ -65,7 +63,6 @@ public class SqliteExporter implements Exporter {
                     statement.setString(1, row.getUpdateRegion());
                     statement.setString(2, row.getLogLevel());
                     statement.setString(3, row.getMessage());
-                    statement.setInt(4, row.getCount());
                     statement.addBatch();
                 }
                 statement.executeBatch();
@@ -77,8 +74,6 @@ public class SqliteExporter implements Exporter {
             }
         }
     }
-
-
 
     public void vacuum()
     {

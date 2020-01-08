@@ -34,6 +34,7 @@
                 <String fx:value="INFO"/>
                 <String fx:value="WARN"/>
                 <String fx:value="ERROR"/>
+                <String fx:value="ANY"/>
             </FXCollections>
         </items>
         <value>
@@ -46,15 +47,6 @@
         <TextField fx:id="expression"/>
     </VBox>
 
-    <Label text="Choose output file format:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-    <HBox fx:id="outputFormat" GridPane.columnIndex="1" GridPane.rowIndex="3" >
-        <fx:define>
-            <ToggleGroup fx:id="toggle"/>
-        </fx:define>
-        <RadioButton text=".csv" fx:id="CSV" toggleGroup="$toggle"/>
-        <RadioButton text=".sq3" fx:id="SQ3" toggleGroup="$toggle" selected="true"/>
-    </HBox>
-
     <Button fx:id="outputDir" text="Select output directory:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
     <TextField fx:id="outputDirPath" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
@@ -66,5 +58,4 @@
         <Button text="Reset" fx:id="reset"/>
     </HBox>
 
-    <!--<ProgressBar fx:id="progressBar" GridPane.columnSpan="2" GridPane.rowIndex="6"/>-->
 </GridPane>
