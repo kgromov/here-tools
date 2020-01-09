@@ -33,7 +33,7 @@ public class Settings
 
     public Path getDataFolder()
     {
-        return Paths.get(outputDir).resolve("logs-data");
+        return Paths.get(outputDir).resolve("data");
     }
 
     public Path getResultsFolder()

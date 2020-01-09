@@ -13,7 +13,7 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logs/console-logs-${myTimestamp}.log</file>
+        <file>logs/console-logs-analyzer-${myTimestamp}.log</file>
         <encoder>
             <pattern>${pattern}</pattern>
         </encoder>

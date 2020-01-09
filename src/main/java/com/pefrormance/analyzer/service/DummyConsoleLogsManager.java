@@ -105,7 +105,7 @@ public class DummyConsoleLogsManager {
 //                .updateRegion(updateRegion.getText())
                 .mapPath("s3://akela-artifacts/Akela-191E3/CMP-0e8a4f7/logs/")
                 .expressionToFind("Found a not simple geometry")
-                .logFile(LogFile.WARN)
+                .logFile(LogFile.ANY)
                 .outputFormat(OutputFormat.SQ3)
                 .outputDir("C:\\Projects\\here-tools\\out")
                 .build();

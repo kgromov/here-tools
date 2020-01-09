@@ -15,6 +15,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
 /**
@@ -24,12 +26,13 @@ public class SqliteExporter implements Exporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SqliteExporter.class);
     private static final String DB_URI_PREFIX = "jdbc:sqlite:file:";
     private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (UpdateRegion TEXT, LogLevel TEXT, Details CLOB)";
-    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, LogLevel, Details) VALUES (?, ?, ?, ?)";
+    private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (UpdateRegion, LogLevel, Details) VALUES (?, ?, ?)";
     private final String resultDbFile;
 
 
     public SqliteExporter(Settings settings) {
-        this.resultDbFile = settings.getResultsFolder().resolve("AGGREGATED_LOG_v2" + settings.getOutputFormat().getFormat()).toString();
+        String timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH_mm_ss").format(LocalDateTime.now());
+        this.resultDbFile = settings.getResultsFolder().resolve(String.format("console-logs-analyzer%s.sq3", timestamp)).toString();
     }
 
     @Override

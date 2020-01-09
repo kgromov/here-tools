@@ -112,7 +112,7 @@ public class ConsoleLogsParser {
     {
         return Stream.of(LogFile.ERROR, LogFile.WARN, LogFile.INFO, LogFile.DEBUG,LogFile.TRACE)
                 .map(Enum::name)
-                .collect(Collectors.joining(")|(", "$\\w+(", ")\\w+"));
+                .collect(Collectors.joining(")|(", "$\\w+(", ")\\s+(->)?\\s+\\w+"));
     }
 
     // TODO: probably add as regExp part or even combine regExp into 1?

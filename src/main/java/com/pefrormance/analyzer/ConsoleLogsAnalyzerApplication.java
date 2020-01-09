@@ -1,6 +1,5 @@
 package com.pefrormance.analyzer;
 
-import com.pefrormance.analyzer.export.OutputFormat;
 import com.pefrormance.analyzer.model.LogFile;
 import com.pefrormance.analyzer.model.Product;
 import com.pefrormance.analyzer.model.Settings;
@@ -24,8 +23,8 @@ import java.nio.file.Paths;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ConsoleLogsParserApplication extends Application {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleLogsParserApplication.class);
+public class ConsoleLogsAnalyzerApplication extends Application {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleLogsAnalyzerApplication.class);
     private static final String S3_PREFIX = "s3://";
 
     private Settings settings;
@@ -102,15 +101,6 @@ public class ConsoleLogsParserApplication extends Application {
                     .filter(CheckBox::isSelected)
                     .collect(Collectors.toSet());
 
-            OutputFormat format = outputFormat.getChildren().stream()
-                    .filter(c -> c.getClass().equals(RadioButton.class))
-                    .map(c -> (RadioButton) c)
-                    .filter(ToggleButton::isSelected)
-                    .map(Labeled::getId)
-                    .map(OutputFormat::getOutputFormat)
-                    .findFirst()
-                    .orElse(OutputFormat.CSV);
-
             LogFile logFile = LogFile.getLogFile(logLevel.getValue());
 
             settings = new Settings.Builder()
@@ -119,7 +109,6 @@ public class ConsoleLogsParserApplication extends Application {
                     .mapPath(mapPath.getText())
                     .expressionToFind(expressionToFind.getText())
                     .logFile(logFile)
-                    .outputFormat(format)
                     .outputDir(outputDirPath.getText())
                     .build();
 
@@ -150,11 +139,6 @@ public class ConsoleLogsParserApplication extends Application {
                     .map(c -> (CheckBox) c)
                     .forEach(c -> c.setSelected(false));
             logLevel.setValue("--None--");
-            outputFormat.getChildren().stream()
-                    .filter(c -> c.getClass().equals(RadioButton.class))
-                    .map(c -> (RadioButton) c)
-                    .filter(r -> !r.isSelected())
-                    .forEach(RadioButton::fire);
             expressionToFind.setText(null);
             outputDirPath.setText(null);
             outputDirPath.setEditable(true);
@@ -188,7 +172,6 @@ public class ConsoleLogsParserApplication extends Application {
         products = (VBox) root.lookup("#products");
         logLevel = (ChoiceBox<String>) root.lookup("#logLevel");
         expressionToFind = (TextField) root.lookup("#expression");
-        outputFormat = (HBox) root.lookup("#outputFormat");
         outputDir = (Button) root.lookup("#outputDir");
         outputDirPath = (TextField) root.lookup("#outputDirPath");
         start = (Button) root.lookup("#start");
