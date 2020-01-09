@@ -3,6 +3,7 @@ package com.pefrormance.analyzer.service;
 import com.pefrormance.analyzer.model.LogFile;
 import com.pefrormance.analyzer.model.ResultRow;
 import com.pefrormance.analyzer.model.Settings;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ public class ConsoleLogsParser {
         AtomicLong count = new AtomicLong();
         LogFile logFile = settings.getLogFile();
         String filSuffix = settings.getLogFile().getFileName();
-        String expression = settings.getExpressionToFind();
 
         LOGGER.info("Start processing product = " + product);
         Files.find(settings.getDataFolder(),
@@ -75,13 +75,18 @@ public class ConsoleLogsParser {
 
                         while (in.hasNext()) {
                             String line = in.nextLine();
-                            Optional<String> logLevel = getLogLevelFromRow(line, logFile);
-                            if (logLevel.isPresent() && line.contains(expression)) {
-                                String [] messages = line.split(AKELA_LOG_DELIMITER);
+                            Optional<Pair<String, Integer>> logLevelMatch = getLogLevelFromRow(line, logFile);
+                            if (logLevelMatch.isPresent()
+                                    && (logFile == LogFile.ANY || logLevelMatch.get().getLeft().equals(logFile.getLogLevel()))
+                                    && isExpressionMatched(settings, line)) {
+                                String logLevel = logLevelMatch.get().getLeft();
+                                int endMatch = logLevelMatch.get().getRight();
+                                String [] messages = line.split(logLevel + AKELA_LOG_DELIMITER);
                                 String message = messages.length > 1
                                         ? messages[1]
-                                        : line.substring(line.indexOf(logLevel.get() + logLevel.get() + 1));
-                                ResultRow row = new ResultRow(updateRegion, logLevel.get(), message);
+                                        : line.substring(endMatch + 1);
+//                                String message = line.substring(endMatch + 1);
+                                ResultRow row = new ResultRow(updateRegion, logLevel, message);
                                 rowsPerRegion.add(row);
                             }
                             count.incrementAndGet();
@@ -104,10 +109,15 @@ public class ConsoleLogsParser {
         return lines;
     }
 
+    private boolean isExpressionMatched(Settings settings, String message)
+    {
+        return settings.isRegExp()
+                ? settings.getExpressionPattern().matcher(message).find()
+                : message.contains(settings.getExpressionToFind());
+    }
 
     private static final Pattern LOG_LEVEL_PATTERN = Pattern.compile(getLogLevelRegularExpression());
 
-    // TODO: change to pair
     private static String getLogLevelRegularExpression()
     {
         return Stream.of(LogFile.ERROR, LogFile.WARN, LogFile.INFO, LogFile.DEBUG,LogFile.TRACE)
@@ -115,20 +125,19 @@ public class ConsoleLogsParser {
                 .collect(Collectors.joining(")|(", "$\\w+(", ")\\s+(->)?\\s+\\w+"));
     }
 
-    // TODO: probably add as regExp part or even combine regExp into 1?
-    private static final String AKELA_LOG_DELIMITER = " -> ";
+    private static final String AKELA_LOG_DELIMITER = "\\s+(->)?\\s+";
 
-    private Optional<String> getLogLevelFromRow(String message, LogFile logFile)
+    private Optional<Pair<String, Integer>> getLogLevelFromRow(String message, LogFile logFile)
     {
         Matcher matcher = LOG_LEVEL_PATTERN.matcher(message);
         boolean isFound = matcher.find();
         if (isFound && logFile != LogFile.ANY)
         {
-            return Optional.of(logFile.getLogLevel());
+            return Optional.of(Pair.of(logFile.getLogLevel(), matcher.end()));
         }
         else if (isFound)
         {
-            return Optional.of(matcher.group());
+            return Optional.of(Pair.of(matcher.group(), matcher.end()));
         }
         return Optional.empty();
     }

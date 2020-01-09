@@ -7,6 +7,7 @@ import lombok.ToString;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Getter
 @ToString
@@ -17,6 +18,7 @@ public class Settings
     private String mapPath;
     private LogFile logFile;
     private String expressionToFind;
+    private Pattern expressionPattern;
     private OutputFormat outputFormat;
     private String outputDir;
 
@@ -27,18 +29,24 @@ public class Settings
       this.mapPath = builder.mapPath;
       this.logFile = builder.logFile;
       this.expressionToFind = builder.expressionToFind;
+      this.expressionPattern = builder.expressionPattern;
       this.outputFormat = builder.outputFormat;
       this.outputDir = builder.outputDir == null ? Paths.get(".").normalize().toAbsolutePath().toString() : builder.outputDir;
     }
 
     public Path getDataFolder()
     {
-        return Paths.get(outputDir).resolve("data");
+        return Paths.get(outputDir).resolve("logs-data");
     }
 
     public Path getResultsFolder()
     {
         return Paths.get(outputDir).resolve("results");
+    }
+
+    public boolean isRegExp()
+    {
+        return expressionPattern != null;
     }
 
     public void reset()
@@ -50,6 +58,7 @@ public class Settings
         this.expressionToFind = null;
         this.outputFormat = null;
         this.outputDir = null;
+        this.expressionPattern = null;
     }
 
     public static final class Builder
@@ -59,6 +68,7 @@ public class Settings
         private String mapPath;
         private LogFile logFile;
         private String expressionToFind;
+        private Pattern expressionPattern;
         private OutputFormat outputFormat;
         private String outputDir;
 
@@ -96,6 +106,13 @@ public class Settings
             this.expressionToFind = expressionToFind;
             return this;
         }
+
+        public Builder expressionPattern(Pattern expressionPattern)
+        {
+            this.expressionPattern = expressionPattern;
+            return this;
+        }
+
 
         public Builder outputFormat(OutputFormat outputFormat)
         {

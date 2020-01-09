@@ -45,6 +45,7 @@
     <VBox GridPane.columnIndex="1" GridPane.rowIndex="2">
         <Label text="Specify expression to search:"/>
         <TextField fx:id="expression"/>
+        <CheckBox fx:id="regExp" text="Use regular expression"/>
     </VBox>
 
     <Button fx:id="outputDir" text="Select output directory:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>

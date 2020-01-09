@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -92,10 +93,28 @@ public class DummyConsoleLogsManager {
     }
 
     public static void main(String[] args) {
-        Pattern pattern = Pattern.compile("$\\w.+(ERROR)|(WARN)|(INFO)|(DEBUG).*\\bFound a not simple geometry");
+//        Pattern pattern = Pattern.compile("$\\w.+(ERROR)|(WARN)|(INFO)|(DEBUG).*\\bFound a not simple geometry");
+        Pattern pattern = Pattern.compile("$\\w.+(ERROR)|(WARN)|(INFO)|(DEBUG)\\w+");
+        Pattern pattern2 = Pattern.compile("$\\w.+(ERROR)|(WARN)|(INFO)|(DEBUG)\\s+(->)?\\s+\\w+");
+        Pattern pattern4 = Pattern.compile("$\\w.+(ERROR)|(WARN)|(INFO)|(DEBUG)|\\s+[->]?\\s+\\w+");
+//        Pattern pattern3 = Pattern.compile("\\s+(->)?\\s+");
+        Pattern pattern3 = Pattern.compile("\\s+(->)?\\s+");
         String message = "TUN,2019-12-13 00:39:14,061 - WARN  -> [com.navteq.psf.basicnav.bmd.jts.JtsIO] Found a not simple geometry with 10 points";
+        String message2 = "08:47:51 2020-01-08 06:47:38,759 [611120389/309130501 HDInputTiler] WARN  tile.HDLaneGroupTiler: " +
+                "All attempts to tile lane geometries failed for hdLaneGroup here:ec:path:1318136249 - lane hdLaneGroup parts will have no geometry, but retain connectivity";
 
-
+        Matcher m1 = pattern4.matcher(message);
+        while (m1.find())
+        {
+            System.out.println(m1.group());
+            System.out.println(String.format("[start = %d; end = %d]", m1.start(), m1.end()));
+        }
+        m1 =  pattern4.matcher(message2);
+        while (m1.find())
+        {
+            System.out.println(m1.group());
+            System.out.println(String.format("[start = %d; end = %d]", m1.start(), m1.end()));
+        }
 
         String [] productNames = {"LC", "FB", "WOM"};
         Set<Product> products = Arrays.stream(productNames).map(Product::getProductByName).collect(Collectors.toSet());
@@ -104,8 +123,11 @@ public class DummyConsoleLogsManager {
                 .product(products)
 //                .updateRegion(updateRegion.getText())
                 .mapPath("s3://akela-artifacts/Akela-191E3/CMP-0e8a4f7/logs/")
+//                .mapPath("s3://akela-artifacts/Akela-19135/CMP-f00cab9/logs")
                 .expressionToFind("Found a not simple geometry")
-                .logFile(LogFile.ANY)
+//                .expressionPattern(Pattern.compile("Found.*geometry"))
+//                .expressionToFind("HDInputTiler")
+                .logFile(LogFile.WARN)
                 .outputFormat(OutputFormat.SQ3)
                 .outputDir("C:\\Projects\\here-tools\\out")
                 .build();
