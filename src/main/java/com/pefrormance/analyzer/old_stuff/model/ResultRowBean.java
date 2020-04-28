@@ -1,4 +1,4 @@
-package com.pefrormance.analyzer.model;
+package com.pefrormance.analyzer.old_stuff.model;
 
 import lombok.Data;
 

@@ -1,5 +1,6 @@
-package com.pefrormance.analyzer.model;
+package com.pefrormance.analyzer.old_stuff.model;
 
+import com.pefrormance.analyzer.model.Product;
 import lombok.Getter;
 import lombok.ToString;
 

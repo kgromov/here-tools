@@ -1,13 +1,13 @@
-package com.pefrormance.analyzer.service;
+package com.pefrormance.analyzer.old_stuff.service;
 
 
-import com.pefrormance.analyzer.export.AggregatedResultsExporter;
-import com.pefrormance.analyzer.model.LogsHolder;
-import com.pefrormance.analyzer.model.ResultRowBean;
-import com.pefrormance.analyzer.model.Settings;
+import com.pefrormance.analyzer.old_stuff.export.AggregatedResultsExporter;
+import com.pefrormance.analyzer.old_stuff.model.LogsHolder;
+import com.pefrormance.analyzer.old_stuff.model.ResultRowBean;
+import com.pefrormance.analyzer.old_stuff.model.Settings;
 import javafx.concurrent.Task;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -20,21 +20,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
+@RequiredArgsConstructor
 public class TasksTimeAnalyzer extends Task<Void>{
-    private static final Logger LOGGER = LoggerFactory.getLogger(TasksTimeAnalyzer.class);
     private static final NumberFormat FORMAT = NumberFormat.getPercentInstance();
     private final Settings settings;
-
-    public TasksTimeAnalyzer(Settings settings) {
-        this.settings = settings;
-    }
 
     @Override
     protected Void call() {
@@ -51,22 +44,22 @@ public class TasksTimeAnalyzer extends Task<Void>{
 
             settings.getProducts().stream().parallel().forEach(product ->
             {
-                LOGGER.info("Start processing product = " + product);
+                log.info("Start processing product = " + product);
                 try {
-                    LOGGER.info("Start downloading files for product = " + product);
+                    log.info("Start downloading files for product = " + product);
                     List<Future<?>> results = new ArrayList<>(2);
                     results.add(executor.submit(() -> {
                         try {
-                            new Downloader(product.getName(), settings.getUpdateRegion(), settings.getMap1Path(), outputDir).download(LOGGER::debug);
+                            new Downloader(product.getName(), settings.getUpdateRegion(), settings.getMap1Path(), outputDir).download(log::debug);
                         } catch (Exception e) {
-                            LOGGER.error(String.format("Error occurred while processing %s, product = %s", settings.getMap1Path(), product), e);
+                            log.error(String.format("Error occurred while processing %s, product = %s", settings.getMap1Path(), product), e);
                         }
                     }));
                     results.add(executor.submit(() -> {
                         try {
-                            new Downloader(product.getName(), settings.getUpdateRegion(), settings.getMap2Path(), outputDir).download(LOGGER::debug);
+                            new Downloader(product.getName(), settings.getUpdateRegion(), settings.getMap2Path(), outputDir).download(log::debug);
                         } catch (Exception e) {
-                            LOGGER.error(String.format("Error occurred while processing %s, product = %s", settings.getMap2Path(), product), e);
+                            log.error(String.format("Error occurred while processing %s, product = %s", settings.getMap2Path(), product), e);
                         }
                     }));
                     results.forEach(r -> {
@@ -76,7 +69,7 @@ public class TasksTimeAnalyzer extends Task<Void>{
                             Thread.currentThread().interrupt();
                         }
                     });
-                    LOGGER.info("Finish downloading files for product = " + product);
+                    log.info("Finish downloading files for product = " + product);
 
                     LogsHolder logsHolder = new LogsHolder(product.getName());
                     Map<String, Collection<ResultRowBean>> data = logsHolder.bypassLogs(settings);
@@ -85,16 +78,16 @@ public class TasksTimeAnalyzer extends Task<Void>{
                     progress.incrementAndGet();
                     updateProgress(progress.get(), settings.getProducts().size());
                     updateMessage("Progress: " + FORMAT.format(progress.doubleValue() / settings.getProducts().size()));
-                    LOGGER.info("Finish processing product = " + product);
+                    log.info("Finish processing product = " + product);
                 } catch (Exception e) {
-                    LOGGER.error(String.format("Unable to collect data for product = %s", product), e);
+                    log.error(String.format("Unable to collect data for product = %s", product), e);
                 }
             });
             exporter.vacuum();
         } finally {
             executor.shutdown();
             removeLogFiles();
-            LOGGER.info(String.format("Time elapsed = %d s", TimeUnit.SECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)));
+            log.info(String.format("Time elapsed = %d s", TimeUnit.SECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)));
         }
         return null;
     }
@@ -102,7 +95,7 @@ public class TasksTimeAnalyzer extends Task<Void>{
     public void removeLogFiles() {
         try
         {
-            LOGGER.debug(String.format("Remove collected data from: %s", settings.getDataFolder()));
+            log.debug(String.format("Remove collected data from: %s", settings.getDataFolder()));
             Files.walkFileTree(settings.getDataFolder(), new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
@@ -119,7 +112,7 @@ public class TasksTimeAnalyzer extends Task<Void>{
         }
         catch (IOException e)
         {
-            LOGGER.error("Unable to clear temporary data folder:", e);
+            log.error("Unable to clear temporary data folder:", e);
         }
     }
 }

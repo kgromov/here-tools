@@ -1,31 +1,21 @@
-package com.pefrormance.analyzer.model;
+package com.pefrormance.analyzer.old_stuff.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pefrormance.analyzer.export.RegionResultsExporter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
+@Slf4j
 public class LogsHolder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LogsHolder.class);
-
     private static final Function<Path, String> PATH_TO_REGION = path ->
     {
         String fileName = path.getFileName().toString();
@@ -70,7 +60,7 @@ public class LogsHolder {
         {
             String region = entry.getKey();
             Pair<Path, Path> logs = entry.getValue();
-            LOGGER.debug("Start processing region = " + region);
+            log.debug("Start processing region = " + region);
             long start = System.nanoTime();
             try {
                 TasksHolder tasksHolderMap1 = new TasksHolder(region);
@@ -84,12 +74,12 @@ public class LogsHolder {
                     data.put(region, getResultsPerRegion(tasksHolderMap1, tasksHolderMap2));
                 }
 //                exporter.exportRegion(region, tasksHolderMap1, tasksHolderMap2);
-                LOGGER.debug("Finish processing region = " + region);
+                log.debug("Finish processing region = " + region);
             } catch (IOException e) {
-                LOGGER.error("Error occurred while processing region = " + region, e);
+                log.error("Error occurred while processing region = " + region, e);
             }
             finally {
-                LOGGER.debug(String.format("Json + DB converters = %d ms", TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)));
+                log.debug(String.format("Json + DB converters = %d ms", TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)));
             }
         });
         return data;

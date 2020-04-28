@@ -1,21 +1,15 @@
 package com.pefrormance.analyzer;
 
 import com.pefrormance.analyzer.model.Product;
-import com.pefrormance.analyzer.model.Settings;
-import com.pefrormance.analyzer.service.TasksTimeAnalyzer;
+import com.pefrormance.analyzer.old_stuff.model.Settings;
+import com.pefrormance.analyzer.old_stuff.service.TasksTimeAnalyzer;
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Labeled;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;

@@ -1,9 +1,8 @@
-package com.pefrormance.analyzer.export;
+package com.pefrormance.analyzer.old_stuff.export;
 
-import com.pefrormance.analyzer.model.TaskBean;
-import com.pefrormance.analyzer.model.TasksHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.pefrormance.analyzer.old_stuff.model.TaskBean;
+import com.pefrormance.analyzer.old_stuff.model.TasksHolder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,9 +16,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class RegionResultsExporter
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegionResultsExporter.class);
     private static final String DB_URI_PREFIX = "jdbc:sqlite:file:";
     private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (TaskName TEXT, '%s' REAL, '%s' REAL)";
     private static final String INSERT_TABLE_TEMPLATE = "INSERT INTO %s (TaskName, '%s', '%s') VALUES (?, ?, ?)";
@@ -47,7 +46,7 @@ public class RegionResultsExporter
 
     public void exportRegion(String region, TasksHolder first, TasksHolder second)
     {
-        LOGGER.info("Export data for region = "+ region);
+        log.info("Export data for region = "+ region);
         Map<String, Double> tasksFirst =  first.getTasks().stream()
                 .collect(Collectors.toMap(TaskBean::getName, TaskBean::getDuration));
 
@@ -82,7 +81,7 @@ public class RegionResultsExporter
                 statement.close();
             }
             catch (SQLException e) {
-               LOGGER.error(String.format("Unable to export data for region = %s", region), e);
+               log.error(String.format("Unable to export data for region = %s", region), e);
             }
         }
     }

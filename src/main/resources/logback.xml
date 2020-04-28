@@ -19,8 +19,10 @@
         </encoder>
     </appender>
 
+    <!-- custom logging levels -->
+    <logger name="com.pefrormance.analyzer" level="debug" />
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>
