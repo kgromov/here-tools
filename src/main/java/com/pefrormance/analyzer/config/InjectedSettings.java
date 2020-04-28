@@ -7,8 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
-/*import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;*/
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
@@ -25,15 +25,15 @@ public class InjectedSettings {
     private static final String DEFAULT_VERSION2 = "map2";
 
     private String updateRegion;
-//    @NotBlank
+    @NotBlank
     private String map1Path;
     private String map1Name;
-//    @NotBlank
+    @NotBlank
     private String map2Path;
     private String map2Name;
-//    @NotBlank
+    @NotBlank
     private String outputDir;
-//    @NotEmpty
+    @NotEmpty
     private Set<Product> products;
 
     @PostConstruct

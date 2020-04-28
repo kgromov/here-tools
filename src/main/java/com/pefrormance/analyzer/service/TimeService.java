@@ -5,28 +5,27 @@ import com.pefrormance.analyzer.component.FileBypasser;
 import com.pefrormance.analyzer.config.InjectedSettings;
 import com.pefrormance.analyzer.old_stuff.model.ResultRowBean;
 import com.pefrormance.analyzer.repository.ResultsExporter;
+import javafx.concurrent.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by konstantin on 27.04.2020.
  */
 @Slf4j
 @Service
-public class TimeService {
+public class TimeService extends Task<Void> {
+    private static final NumberFormat FORMAT = NumberFormat.getPercentInstance();
+
     private final InjectedSettings settings;
     private final Downloadable downloader;
     private final ResultsExporter exporter;
@@ -42,10 +41,16 @@ public class TimeService {
         this.fileBypasser = fileBypasser;
     }
 
-    @Async
-    public void call() {
+//    @Async
+    @Override
+    public Void call() {
         long start = System.nanoTime();
+        AtomicInteger progress = new AtomicInteger();
         try {
+
+            updateProgress(progress.get(), settings.getProducts().size());
+            updateMessage("Progress: " + FORMAT.format(progress.doubleValue() / settings.getProducts().size()));
+
             settings.getProducts().stream().parallel().forEach(product ->
             {
                 log.info("Start processing product = " + product);
@@ -66,6 +71,11 @@ public class TimeService {
 
                 Map<String, Collection<ResultRowBean>> data = logsHolder.bypassLogs(product.getName());
                 exporter.export(product, data);
+
+                progress.incrementAndGet();
+                updateProgress(progress.get(), settings.getProducts().size());
+                updateMessage("Progress: " + FORMAT.format(progress.doubleValue() / settings.getProducts().size()));
+
                 log.info("Finish processing product = " + product);
             });
             exporter.vacuum();
@@ -73,5 +83,6 @@ public class TimeService {
             fileBypasser.removeLogFiles();
             log.info(String.format("Time elapsed = %d s", TimeUnit.SECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)));
         }
+        return null;
     }
 }

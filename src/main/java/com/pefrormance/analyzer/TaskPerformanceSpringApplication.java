@@ -25,7 +25,7 @@ public class TaskPerformanceSpringApplication extends Application
     @Override
     public void init() throws Exception {
         context = SpringApplication.run(TaskPerformanceSpringApplication.class);
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/static/template.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/static/template2.fxml"));
 //        fxmlLoader.setControllerFactory(context::getBean);
         fxmlLoader.setControllerFactory((clazz) ->
         {

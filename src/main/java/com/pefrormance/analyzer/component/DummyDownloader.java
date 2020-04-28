@@ -20,7 +20,7 @@ public class DummyDownloader implements Downloadable {
     @SneakyThrows
     public CompletableFuture<Void> download(AwsCommand command) {
         log.info("Download files by aws command: {}", command);
-        Thread.sleep(1000L);
+        Thread.sleep(10000L);
         return null;
     }
 }
