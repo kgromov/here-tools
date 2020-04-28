@@ -1,5 +1,6 @@
 package com.pefrormance.analyzer.controller;
 
+import com.pefrormance.analyzer.component.Progresser;
 import com.pefrormance.analyzer.config.InjectedSettings;
 import com.pefrormance.analyzer.service.TimeService;
 import javafx.fxml.FXML;
@@ -27,6 +28,7 @@ public class MainController {
 
     private final TimeService timeService;
     private final InjectedSettings settings;
+    private final Progresser progresser;
 
     public void initialize()
     {
@@ -38,19 +40,11 @@ public class MainController {
         settings.print();
 
         // tempalate2
-        progressBar.progressProperty().bind(timeService.progressProperty());
-        progressLabel.textProperty().bind(timeService.messageProperty());
-        start.disableProperty().bind(timeService.runningProperty());
-        reset.disableProperty().bind(timeService.runningProperty());
+        progressBar.progressProperty().bind(progresser.progressProperty());
+        progressLabel.textProperty().bind(progresser.messageProperty());
+        start.disableProperty().bind(progresser.runningProperty());
+        reset.disableProperty().bind(progresser.runningProperty());
 
         timeService.call();
-//        start.setDisable(true);
-
-        /* Task<Void> task = new TasksTimeAnalyzer(settings);
-        progressBar.progressProperty().bind(task.progressProperty());
-        progressLabel.textProperty().bind(task.messageProperty());
-        start.disableProperty().bind(task.runningProperty());
-        reset.disableProperty().bind(task.runningProperty());
-        new Thread(task).start();*/
     }
 }
